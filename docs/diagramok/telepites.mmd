@@ -1,0 +1,41 @@
+---
+title: PhotoChain – az éles telepítés (L32)
+---
+flowchart LR
+  subgraph kliens["Felhasználó"]
+    B["Böngésző<br/>(React-felület)"]
+  end
+
+  subgraph render["Render – ingyenes Web Service (Frankfurt, 512 MB, 0,1 CPU)"]
+    CF["Cloudflare + Render terheléselosztó<br/>(TLS, http → https, 3 proxyugrás)"]
+    APP["Docker-konténer: Node 24 + Express<br/>API + a kliens buildje + /media<br/>(közös képsor, 25 MP)"]
+  end
+
+  subgraph supabase["Supabase (eu-west-1)"]
+    DB[("PostgreSQL 17<br/>Session pooler :5432<br/>TLS + CA-ellenőrzés, RLS")]
+    ST[("Storage – privát bucketek<br/>originals, previews")]
+  end
+
+  subgraph lanc["Ethereum Sepolia"]
+    RPC["Alchemy RPC"]
+    SC["PhotoRegistry<br/>okosszerződés"]
+  end
+
+  subgraph stripe["Stripe (teszt mód)"]
+    CO["Checkout"]
+    WH["Webhook-végpont"]
+  end
+
+  subgraph fejlesztes["Fejlesztés és telepítés"]
+    GH["GitHub (main)<br/>CI: GitHub Actions<br/>Dependabot"]
+    DEV["Fejlesztői gép<br/>production:migrate / seed"]
+  end
+
+  B -- "https" --> CF --> APP
+  APP -- "Prisma + pg" --> DB
+  APP -- "képek (sb_secret kulcs)" --> ST
+  APP -- "regisztráció, ellenőrzés" --> RPC --> SC
+  B -- "fizetés" --> CO
+  WH -- "aláírt esemény<br/>/api/webhooks/stripe" --> CF
+  GH -- "render.yaml (Blueprint),<br/>telepítés a CI után" --> APP
+  DEV -- "migrációk, kezdő adatok (TLS)" --> DB

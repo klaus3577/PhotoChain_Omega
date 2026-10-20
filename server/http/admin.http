@@ -1,0 +1,70 @@
+# REST Client (VS Code) kérések – adminisztráció (L16), sorban fentről lefelé. A szerver: npm run dev
+# (server/ mappában). Az admin fiókot a seed hozza létre (npm run db:seed – SEED_ADMIN_EMAIL,
+# SEED_ADMIN_PASSWORD a server/.env-ben). A jelszót csak helyben írd be, a fájllal ne commitold!
+
+@host = http://localhost:4000
+@baseUrl = {{host}}/api
+@adminEmail = admin@photochain.test
+@adminPassword = ide-a-SEED_ADMIN_PASSWORD-erteke
+
+### 1. Bejelentkezés (admin) – várt válasz: 200 + Set-Cookie (a REST Client a sütit megjegyzi)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+### 2. Statisztika – felhasználók, képek és rendelések állapotonként, bevétel, láncon lévő hash-ek
+GET {{baseUrl}}/admin/stats
+
+### 3. Felhasználók – a legutóbb regisztrált elöl; keresés e-mailre vagy névre (q), tiltási szűrő
+# @name users
+GET {{baseUrl}}/admin/users?pageSize=5
+
+### 4. Csak a letiltott felhasználók
+GET {{baseUrl}}/admin/users?blocked=true
+
+### 5. Tiltás – várt válasz: 200, isBlocked: true. A felhasználó következő kérése 403
+### ACCOUNT_BLOCKED; a képei, a profilja és az értékelései a tiltás idejére eltűnnek; a nyitott
+### fizetései lezárulnak. Adminisztrátor nem tiltható le (409).
+PATCH {{baseUrl}}/admin/users/{{users.response.body.$.data.users[0].id}}
+Content-Type: application/json
+
+{ "isBlocked": true }
+
+### 6. Feloldás – várt válasz: 200, isBlocked: false (a tartalma visszajön)
+PATCH {{baseUrl}}/admin/users/{{users.response.body.$.data.users[0].id}}
+Content-Type: application/json
+
+{ "isBlocked": false }
+
+### 7. Képek – minden állapotban, a legújabb elöl; szűrés: status=PENDING_CHAIN|REGISTERED|
+### CHAIN_FAILED|HIDDEN
+# @name photos
+GET {{baseUrl}}/admin/photos?status=REGISTERED&pageSize=5
+
+### 8. Elrejtés – várt válasz: 200, status: HIDDEN, hiddenBy: ADMIN, thumbnailUrl: null (a nyilvános
+### fájlok törlődnek, a kép nyitott fizetései lezárulnak; a lánc rekordja megmarad)
+PATCH {{baseUrl}}/admin/photos/{{photos.response.body.$.data.photos[0].id}}
+Content-Type: application/json
+
+{ "hidden": true }
+
+### 9. Visszaállítás – várt válasz: 200, status: REGISTERED (az előnézet és a bélyegkép az
+### eredetiből újra elkészül). A csak a tulajdonos által elrejtett kép nem állítható vissza (409);
+### ha a tulajdonos is elrejtette, csak a moderátori levétel szűnik meg (a kép rejtett marad).
+PATCH {{baseUrl}}/admin/photos/{{photos.response.body.$.data.photos[0].id}}
+Content-Type: application/json
+
+{ "hidden": false }
+
+### 10. Sikertelen lánc-regisztrációk
+# @name failed
+GET {{baseUrl}}/admin/photos?status=CHAIN_FAILED
+
+### 11. Újrapróbálás – várt válasz: 202, status: PENDING_CHAIN; a regisztráció a háttérben fut.
+### FIGYELEM: valódi Sepolia-tranzakciót küld (gázdíj)! Adminonként korlátozott
+### (CHAIN_RETRY_RATE_LIMIT_MAX); a nem CHAIN_FAILED képre 409.
+POST {{baseUrl}}/admin/photos/{{failed.response.body.$.data.photos[0].id}}/retry-registration

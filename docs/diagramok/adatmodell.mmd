@@ -1,0 +1,67 @@
+---
+title: PhotoChain – az adatbázis ER-diagramja (PostgreSQL 17, server/prisma/schema.prisma)
+---
+erDiagram
+  direction LR
+  users ||--o{ photos : "feltölt"
+  categories ||--o{ photos : "csoportosít"
+  users ||--o{ orders : "vásárol"
+  photos ||--o{ orders : "tárgya"
+  users ||--o{ reviews : "ír"
+  photos ||--o{ reviews : "kap"
+
+  users {
+    uuid id PK
+    varchar(254) email UK "CHECK: kisbetűs"
+    text passwordHash "bcrypt-hash"
+    varchar(50) displayName
+    varchar(500) bio "NULL"
+    Role role "USER | ADMIN"
+    boolean isBlocked "false"
+    timestamptz createdAt
+  }
+  categories {
+    serial id PK
+    varchar(50) name UK
+    varchar(60) slug UK
+  }
+  photos {
+    uuid id PK
+    uuid ownerId FK
+    integer categoryId FK
+    varchar(120) title
+    varchar(2000) description "NULL"
+    integer priceHuf "CHECK: nem negatív"
+    PhotoStatus status "PENDING_CHAIN | REGISTERED | CHAIN_FAILED | HIDDEN"
+    char(64) sha256 UK "SHA-256, CHECK: kisbetűs hex"
+    char(16) dHash "perceptuális hash, CHECK: kisbetűs hex"
+    integer width
+    integer height
+    varchar(255) originalKey
+    varchar(255) previewKey
+    varchar(255) thumbnailKey
+    char(66) chainTxHash "NULL, a küldés előtt mentve"
+    integer chainBlockNumber "NULL"
+    bigint gasUsed "NULL"
+    timestamptz registeredAt "NULL, CHECK: REGISTERED-nél kötelező"
+    HiddenBy hiddenBy "NULL | OWNER | ADMIN | OWNER_AND_ADMIN (CHECK: csak HIDDEN-nél)"
+    timestamptz createdAt
+  }
+  orders {
+    uuid id PK
+    uuid buyerId FK
+    uuid photoId FK
+    integer amountHuf "CHECK: nem negatív"
+    OrderStatus status "PENDING | PAID | EXPIRED | FAILED"
+    varchar(255) stripeSessionId UK "NULL (a fizetés indításáig)"
+    timestamptz createdAt
+    timestamptz paidAt "NULL"
+  }
+  reviews {
+    uuid id PK
+    uuid photoId FK "UK (photoId, authorId)"
+    uuid authorId FK "UK (photoId, authorId)"
+    smallint rating "CHECK: 1–5"
+    varchar(1000) comment "NULL"
+    timestamptz createdAt
+  }

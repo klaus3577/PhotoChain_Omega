@@ -1,0 +1,25 @@
+{
+  "name": "photochain-e2e",
+  "private": true,
+  "version": "0.1.0",
+  "description": "PhotoChain – end-to-end tesztek Playwrighttal (a teljes folyamat böngészőből, lokális Hardhat-lánccal)",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "npm run test:setup && playwright test",
+    "test:setup": "node --test \"setup/*.test.ts\"",
+    "test:headed": "playwright test --headed",
+    "report": "playwright show-report",
+    "install:browsers": "playwright install chromium",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.0",
+    "@types/node": "^24.13.3",
+    "ethers": "^6.17.0",
+    "stripe": "^23.0.0",
+    "typescript": "~6.0.3"
+  }
+}

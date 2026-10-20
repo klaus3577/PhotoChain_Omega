@@ -1,0 +1,58 @@
+# REST Client (VS Code) kérések – értékelések (L15), sorban fentről lefelé. A szerver: npm run dev
+# (server/ mappában). Előtte a vevő próbafiókja megvett egy képet (orders.http – a fizetés után a
+# rendelés PAID): csak a kép kifizetett vásárlója értékelhet, képenként egyszer.
+
+@host = http://localhost:4000
+@baseUrl = {{host}}/api
+# A vevő próbafiókja a helyi fejlesztői adatbázisban – kitalált adatok, nem valódi jelszó
+@email = proba.peter@photochain.test
+@password = helyi-proba-jelszo
+
+### 1. Bejelentkezés (vevő) – várt válasz: 200 + Set-Cookie (a REST Client a sütit megjegyzi)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### 2. Vásárlásaim – az első megvett kép lesz az értékelendő
+# @name purchases
+GET {{baseUrl}}/me/purchases?pageSize=1
+
+### 3. Értékelés írása – várt válasz: 201, az új értékelés (no-store). Ismételve: 409
+### ALREADY_REVIEWED; a meg nem vett képre 403; a szöveg nem kötelező (elég a csillag)
+# @name review
+POST {{baseUrl}}/photos/{{purchases.response.body.$.data.orders[0].photo.id}}/reviews
+Content-Type: application/json
+
+{
+  "rating": 5,
+  "comment": "Gyönyörű fények, köszönöm!"
+}
+
+### 4. A kép értékelései – várt válasz: 200, a legújabb elöl, a szerző nevével, rating: { average,
+### count } és meta (bejelentkezés nélkül is elérhető)
+GET {{baseUrl}}/photos/{{purchases.response.body.$.data.orders[0].photo.id}}/reviews
+
+### 5. A kép adatlapja – a fotós azonosítója a 6. kéréshez
+# @name photo
+GET {{baseUrl}}/photos/{{purchases.response.body.$.data.orders[0].photo.id}}
+
+### 6. A fotós profilja – várt válasz: 200, rating: { average, count } a nyilvános képei
+### értékeléseiből
+GET {{baseUrl}}/users/{{photo.response.body.$.data.photo.owner.id}}
+
+### 7. Hibás törzs – várt válasz: 400, VALIDATION_ERROR (a csillag 1–5 egész szám; a szerzőt a
+### szerver a munkamenetből veszi: „ismeretlen mező: authorId”)
+POST {{baseUrl}}/photos/{{purchases.response.body.$.data.orders[0].photo.id}}/reviews
+Content-Type: application/json
+
+{
+  "rating": 6,
+  "authorId": "00000000-0000-0000-0000-000000000000"
+}
+
+### 8. A saját értékelés törlése – várt válasz: 204; ismételve 404. Utána újat írhat (3. kérés).
+DELETE {{baseUrl}}/reviews/{{review.response.body.$.data.review.id}}

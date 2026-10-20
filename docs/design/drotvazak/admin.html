@@ -1,0 +1,575 @@
+<!doctype html>
+<!--
+  PhotoChain – drótváz: Adminisztráció (L17). Lo-fi, szürkeárnyalatos vázlat: az elrendezést, a tartalmat
+  és a viselkedést mutatja; a végleges színek és komponensek a docs/design/stilusutmutato.html-ben vannak.
+  Önálló fájl (a betűk, a Tailwind és az ikonok CDN-ről), így külön megnyitható és lefényképezhető.
+  Reszponzív: ugyanaz a fájl mobilon (390 px) és asztali nézetben (1440 px).
+-->
+<html lang="hu">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Drótváz – Adminisztráció · PhotoChain</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@fontsource-variable/inter@5.3.0/index.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@fontsource-variable/jetbrains-mono@5.3.0/index.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@1.53.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+      @theme {
+        --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+        --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+      }
+      /* Képhelyőrző: áthúzott téglalap (a drótvázak szokásos jele) */
+      @utility wf-img {
+        background:
+          linear-gradient(
+            to top right,
+            transparent calc(50% - 1px),
+            var(--color-neutral-300) 50%,
+            transparent calc(50% + 1px)
+          ),
+          linear-gradient(
+            to bottom right,
+            transparent calc(50% - 1px),
+            var(--color-neutral-300) 50%,
+            transparent calc(50% + 1px)
+          ),
+          var(--color-neutral-100);
+      }
+      /* Számozott jegyzetjel: a lap alján lévő azonos számú jegyzetre utal */
+      @utility wf-note {
+        display: inline-grid;
+        flex-shrink: 0;
+        place-items: center;
+        width: 1.375rem;
+        height: 1.375rem;
+        border-radius: 9999px;
+        background: var(--color-neutral-900);
+        color: var(--color-white);
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1;
+      }
+      /* Állapotjelvény a drótvázon: ikon + szöveg (a végleges színek a stílusútmutatóban) */
+      @utility wf-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        white-space: nowrap;
+        border: 1px solid var(--color-neutral-400);
+        border-radius: 9999px;
+        padding: 0.125rem 0.625rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body class="bg-white font-sans text-neutral-900 antialiased">
+    <header class="border-b border-neutral-300">
+      <div class="mx-auto flex h-16 max-w-7xl items-center gap-8 px-4 sm:px-6 lg:px-8">
+        <a href="#" class="text-lg font-semibold tracking-tight">PhotoChain</a>
+        <nav aria-label="Fő navigáció" class="hidden h-full items-center gap-6 text-sm md:flex">
+          <a href="#" class="text-neutral-600">Galéria</a>
+          <a href="#" class="text-neutral-600">Ellenőrzés</a>
+          <a href="#" class="text-neutral-600">Vezérlőpult</a>
+          <a
+            href="#"
+            aria-current="page"
+            class="flex h-full items-center border-b-2 border-neutral-900 font-semibold"
+            >Admin</a
+          >
+        </nav>
+        <div class="ml-auto flex items-center gap-2">
+          <button
+            type="button"
+            class="grid size-9 place-items-center rounded-full border border-neutral-400 text-xs font-medium"
+            aria-label="AD – fiókmenü"
+            aria-expanded="false"
+          >
+            AD
+          </button>
+          <button
+            type="button"
+            class="grid size-9 place-items-center rounded-md border border-neutral-300 md:hidden"
+            aria-label="Menü"
+            aria-expanded="false"
+          >
+            <i data-lucide="menu" class="size-5"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+      <h1 class="text-3xl font-semibold tracking-tight">Adminisztráció</h1>
+      <p class="mt-1 text-sm text-neutral-600">
+        Felhasználók tiltása, képek moderálása és a lánc-regisztráció újrapróbálása.
+      </p>
+
+      <section aria-label="Statisztika" class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <div class="relative rounded-lg border border-neutral-300 p-4">
+          <b aria-hidden="true" class="wf-note absolute top-3 right-3">1</b>
+          <p class="text-sm text-neutral-600">Felhasználók</p>
+          <p class="mt-1 text-2xl font-semibold tabular-nums">42</p>
+          <p class="mt-1 text-xs text-neutral-500">2 tiltott · 1 admin</p>
+        </div>
+        <div class="rounded-lg border border-neutral-300 p-4">
+          <p class="text-sm text-neutral-600">Képek</p>
+          <p class="mt-1 text-2xl font-semibold tabular-nums">128</p>
+          <p class="mt-1 text-xs text-neutral-500">
+            121 hitelesítve · 2 folyamatban · 1 sikertelen · 4 rejtett
+          </p>
+        </div>
+        <div class="rounded-lg border border-neutral-300 p-4">
+          <p class="text-sm text-neutral-600">Rendelések</p>
+          <p class="mt-1 text-2xl font-semibold tabular-nums">57</p>
+          <p class="mt-1 text-xs text-neutral-500">
+            51 kifizetett · 2 függő · 4 lejárt vagy sikertelen
+          </p>
+        </div>
+        <div class="rounded-lg border border-neutral-300 p-4">
+          <p class="text-sm text-neutral-600">Bevétel</p>
+          <p class="mt-1 text-2xl font-semibold tabular-nums">612 300 Ft</p>
+          <p class="mt-1 text-xs text-neutral-500">a kifizetett rendelésekből</p>
+        </div>
+        <div class="col-span-2 rounded-lg border border-neutral-300 p-4 lg:col-span-1">
+          <p class="text-sm text-neutral-600">Hash a láncon</p>
+          <p class="mt-1 text-2xl font-semibold tabular-nums">125</p>
+          <p class="mt-1 text-xs text-neutral-500">regisztrált ujjlenyomat (a rejtetteké is)</p>
+        </div>
+      </section>
+
+      <div class="mt-10 grid gap-8 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <section aria-labelledby="felhasznalok" class="min-w-0">
+          <div class="flex flex-wrap items-end justify-between gap-3">
+            <h2
+              id="felhasznalok"
+              class="flex items-center gap-2 text-xl font-semibold tracking-tight"
+            >
+              <b aria-hidden="true" class="wf-note">2</b>Felhasználók
+            </h2>
+            <div class="flex w-full flex-wrap gap-2 sm:w-auto">
+              <label class="relative block flex-1 sm:w-64 sm:flex-none"
+                ><span class="sr-only">Keresés név vagy e-mail alapján</span
+                ><i
+                  data-lucide="search"
+                  class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-500"
+                ></i
+                ><input
+                  type="search"
+                  class="h-9 w-full rounded-md border border-neutral-400 pr-3 pl-9 text-sm"
+                  placeholder="Név vagy e-mail…"
+              /></label>
+              <div
+                class="inline-flex rounded-md border border-neutral-400 text-sm"
+                role="group"
+                aria-label="Tiltás szerint"
+              >
+                <button
+                  type="button"
+                  aria-pressed="true"
+                  class="rounded-l-md bg-neutral-900 px-3 py-1.5 text-white"
+                >
+                  Mind</button
+                ><button
+                  type="button"
+                  aria-pressed="false"
+                  class="border-l border-neutral-400 px-3 py-1.5"
+                >
+                  Aktív</button
+                ><button
+                  type="button"
+                  aria-pressed="false"
+                  class="border-l border-neutral-400 px-3 py-1.5"
+                >
+                  Tiltott
+                </button>
+              </div>
+            </div>
+          </div>
+          <div
+            role="region"
+            tabindex="0"
+            aria-label="Felhasználók táblázata"
+            class="mt-4 overflow-x-auto rounded-lg border border-neutral-300"
+          >
+            <table class="w-full min-w-[40rem] text-left text-sm">
+              <thead class="bg-neutral-50 text-neutral-600">
+                <tr>
+                  <th scope="col" class="px-4 py-2.5 font-medium">Név</th>
+                  <th scope="col" class="px-4 py-2.5 font-medium">E-mail</th>
+                  <th scope="col" class="px-4 py-2.5 font-medium">Regisztrált</th>
+                  <th scope="col" class="px-4 py-2.5 font-medium">Állapot</th>
+                  <th scope="col" class="px-4 py-2.5 text-right font-medium">Művelet</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-neutral-200">
+                <tr>
+                  <td class="px-4 py-3 font-medium">Fotós neve</td>
+                  <td class="px-4 py-3 text-neutral-600">foto@pelda.hu</td>
+                  <td class="px-4 py-3 text-neutral-600">2026. 09. 12.</td>
+                  <td class="px-4 py-3">Aktív</td>
+                  <td class="px-4 py-3 text-right">
+                    <span
+                      class="inline-flex h-8 items-center gap-1.5 rounded-md border-2 border-neutral-900 px-3 font-medium"
+                      ><i data-lucide="ban" class="size-4"></i>Letiltás<span class="sr-only"
+                        >: Fotós neve</span
+                      ></span
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 font-medium">Vásárló neve</td>
+                  <td class="px-4 py-3 text-neutral-600">vevo@pelda.hu</td>
+                  <td class="px-4 py-3 text-neutral-600">2026. 09. 30.</td>
+                  <td class="px-4 py-3">
+                    <span class="wf-badge border-2 border-neutral-900"
+                      ><i data-lucide="ban" class="size-4"></i>Tiltva</span
+                    >
+                  </td>
+                  <td class="px-4 py-3 text-right">
+                    <span
+                      class="inline-flex h-8 items-center rounded-md border border-neutral-400 px-3"
+                      >Feloldás<span class="sr-only">: Vásárló neve</span></span
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 font-medium">
+                    Adminisztrátor <span class="text-neutral-500">(te)</span>
+                  </td>
+                  <td class="px-4 py-3 text-neutral-600">admin@pelda.hu</td>
+                  <td class="px-4 py-3 text-neutral-600">2026. 09. 01.</td>
+                  <td class="px-4 py-3">Admin</td>
+                  <td class="px-4 py-3 text-right">
+                    <span class="inline-flex items-center gap-2 text-neutral-500"
+                      ><b aria-hidden="true" class="wf-note">3</b>nem tiltható</span
+                    >
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <dialog
+          open
+          aria-labelledby="tiltas-cim"
+          aria-describedby="tiltas-kovetkezmenyek"
+          class="static m-0 h-fit w-full max-w-none bg-white text-neutral-900 rounded-lg border-2 border-neutral-900 p-5 shadow-lg xl:mt-12"
+        >
+          <p class="text-xs font-semibold tracking-wider text-neutral-500 uppercase">
+            Megerősítő ablak – a „Letiltás” után
+          </p>
+          <h2 id="tiltas-cim" class="mt-2 flex items-center gap-2 text-lg font-semibold">
+            <b aria-hidden="true" class="wf-note">8</b>Letiltod: Fotós neve?
+          </h2>
+          <ul
+            id="tiltas-kovetkezmenyek"
+            class="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-neutral-700"
+          >
+            <li>nem használhatja a fiókját (bejelentkezve semmit);</li>
+            <li>a képei a tiltás idejére eltűnnek a galériából;</li>
+            <li>a folyamatban lévő fizetései lezárulnak.</li>
+          </ul>
+          <p class="mt-2 text-sm text-neutral-600">A tiltás bármikor feloldható.</p>
+          <div class="mt-4 flex justify-end gap-2">
+            <span
+              class="inline-flex h-10 items-center rounded-md border border-neutral-400 px-4 text-sm font-medium"
+              >Mégse</span
+            >
+            <span
+              class="inline-flex h-10 items-center gap-2 rounded-md border-2 border-neutral-900 px-4 text-sm font-medium"
+              ><i data-lucide="ban" class="size-4"></i>Letiltás</span
+            >
+          </div>
+        </dialog>
+      </div>
+
+      <section aria-labelledby="kepek" class="mt-10">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <h2 id="kepek" class="flex items-center gap-2 text-xl font-semibold tracking-tight">
+            <b aria-hidden="true" class="wf-note">4</b>Képek
+          </h2>
+          <div class="flex flex-wrap gap-2 text-sm" role="group" aria-label="Állapot szerint">
+            <button
+              type="button"
+              aria-pressed="true"
+              class="rounded-full bg-neutral-900 px-3 py-1 text-white"
+            >
+              Mind (128)
+            </button>
+            <button
+              type="button"
+              aria-pressed="false"
+              class="rounded-full border border-neutral-400 px-3 py-1"
+            >
+              Hitelesítve (121)
+            </button>
+            <button
+              type="button"
+              aria-pressed="false"
+              class="rounded-full border border-neutral-400 px-3 py-1"
+            >
+              Folyamatban (2)
+            </button>
+            <button
+              type="button"
+              aria-pressed="false"
+              class="rounded-full border border-neutral-400 px-3 py-1"
+            >
+              Sikertelen (1)
+            </button>
+            <button
+              type="button"
+              aria-pressed="false"
+              class="rounded-full border border-neutral-400 px-3 py-1"
+            >
+              Rejtett (4)
+            </button>
+          </div>
+        </div>
+        <div
+          role="region"
+          tabindex="0"
+          aria-label="Képek táblázata"
+          class="mt-4 overflow-x-auto rounded-lg border border-neutral-300"
+        >
+          <table class="w-full min-w-[52rem] text-left text-sm">
+            <thead class="bg-neutral-50 text-neutral-600">
+              <tr>
+                <th scope="col" class="px-4 py-2.5 font-medium">Kép</th>
+                <th scope="col" class="px-4 py-2.5 font-medium">Tulajdonos</th>
+                <th scope="col" class="px-4 py-2.5 font-medium">Állapot</th>
+                <th scope="col" class="px-4 py-2.5 font-medium">Feltöltve</th>
+                <th scope="col" class="px-4 py-2.5 text-right font-medium">Művelet</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-neutral-200">
+              <tr>
+                <td class="px-4 py-3">
+                  <span class="flex items-center gap-3"
+                    ><span
+                      class="wf-img block h-10 w-14 shrink-0 rounded border border-neutral-300"
+                    ></span
+                    ><span class="font-medium">Őszi erdő ködben</span></span
+                  >
+                </td>
+                <td class="px-4 py-3 text-neutral-600">Fotós neve</td>
+                <td class="px-4 py-3">
+                  <span class="wf-badge"
+                    ><i data-lucide="shield-check" class="size-4"></i>Hitelesítve</span
+                  >
+                </td>
+                <td class="px-4 py-3 text-neutral-600">2026. 10. 04.</td>
+                <td class="px-4 py-3 text-right">
+                  <span class="inline-flex items-center gap-2"
+                    ><b aria-hidden="true" class="wf-note">5</b
+                    ><span
+                      class="inline-flex h-8 items-center gap-1.5 rounded-md border-2 border-neutral-900 px-3 font-medium"
+                      ><i data-lucide="eye-off" class="size-4"></i>Elrejtés<span class="sr-only"
+                        >: Őszi erdő ködben</span
+                      ></span
+                    ></span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="px-4 py-3">
+                  <span class="flex items-center gap-3"
+                    ><span
+                      class="wf-img block h-10 w-14 shrink-0 rounded border border-neutral-300"
+                    ></span
+                    ><span class="font-medium">Városi esti fények</span></span
+                  >
+                </td>
+                <td class="px-4 py-3 text-neutral-600">Fotós neve</td>
+                <td class="px-4 py-3">
+                  <span class="wf-badge border-2 border-neutral-900"
+                    ><i data-lucide="shield-alert" class="size-4"></i>Sikertelen regisztráció</span
+                  >
+                </td>
+                <td class="px-4 py-3 text-neutral-600">2026. 10. 02.</td>
+                <td class="px-4 py-3 text-right">
+                  <span class="inline-flex items-center gap-2"
+                    ><b aria-hidden="true" class="wf-note">6</b
+                    ><span
+                      class="inline-flex h-8 items-center gap-1.5 rounded-md border border-neutral-400 px-3"
+                      ><i data-lucide="rotate-cw" class="size-4"></i>Újrapróbálás<span
+                        class="sr-only"
+                        >: Városi esti fények</span
+                      ></span
+                    ></span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="px-4 py-3">
+                  <span class="flex items-center gap-3"
+                    ><span
+                      class="wf-img block h-10 w-14 shrink-0 rounded border border-neutral-300"
+                    ></span
+                    ><span class="font-medium">Hajnal a tónál</span></span
+                  >
+                </td>
+                <td class="px-4 py-3 text-neutral-600">Fotós neve</td>
+                <td class="px-4 py-3">
+                  <span class="wf-badge"
+                    ><i data-lucide="clock" class="size-4"></i>Regisztrálás folyamatban</span
+                  >
+                </td>
+                <td class="px-4 py-3 text-neutral-600">ma 09:12</td>
+                <td class="px-4 py-3 text-right text-neutral-500">várakozás a láncra</td>
+              </tr>
+              <tr>
+                <td class="px-4 py-3">
+                  <span class="flex items-center gap-3"
+                    ><span
+                      class="wf-img block h-10 w-14 shrink-0 rounded border border-neutral-300 opacity-50"
+                    ></span
+                    ><span class="font-medium">Pipacsmező</span></span
+                  >
+                </td>
+                <td class="px-4 py-3 text-neutral-600">Fotós neve</td>
+                <td class="px-4 py-3">
+                  <span class="wf-badge border-2 border-neutral-900"
+                    ><i data-lucide="ban" class="size-4"></i>Moderátor eltávolította</span
+                  >
+                </td>
+                <td class="px-4 py-3 text-neutral-600">2026. 09. 21.</td>
+                <td class="px-4 py-3 text-right">
+                  <span class="inline-flex items-center gap-2"
+                    ><b aria-hidden="true" class="wf-note">7</b
+                    ><span
+                      class="inline-flex h-8 items-center gap-1.5 rounded-md border border-neutral-400 px-3"
+                      ><i data-lucide="eye" class="size-4"></i>Visszaállítás<span class="sr-only"
+                        >: Pipacsmező</span
+                      ></span
+                    ></span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="px-4 py-3">
+                  <span class="flex items-center gap-3"
+                    ><span
+                      class="wf-img block h-10 w-14 shrink-0 rounded border border-neutral-300 opacity-50"
+                    ></span
+                    ><span class="font-medium">Régi híd</span></span
+                  >
+                </td>
+                <td class="px-4 py-3 text-neutral-600">Fotós neve</td>
+                <td class="px-4 py-3">
+                  <span class="wf-badge border-neutral-300 text-neutral-600"
+                    ><i data-lucide="eye-off" class="size-4"></i>Elrejtve (tulajdonos)</span
+                  >
+                </td>
+                <td class="px-4 py-3 text-neutral-600">2026. 09. 28.</td>
+                <td class="px-4 py-3 text-right text-neutral-500">a tulajdonos döntése</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="mt-3 flex items-center gap-2 text-sm text-neutral-500 sm:hidden">
+          <b aria-hidden="true" class="wf-note">9</b>A táblázat mobilon vízszintesen görgethető.
+        </p>
+      </section>
+    </main>
+
+    <aside class="border-t-2 border-dashed border-neutral-300 bg-neutral-50">
+      <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <p class="text-xs font-semibold tracking-wider text-neutral-500 uppercase">Drótváz · L17</p>
+        <h2 class="mt-1 text-lg font-semibold">Adminisztráció – jegyzetek</h2>
+        <p class="mt-1 max-w-3xl text-sm text-neutral-600">
+          Lo-fi vázlat: a vastag keretes gomb és jelvény a végleges felületen piros (veszélyes
+          művelet, hiba, moderálás) – körvonalas, ikonos, így nem keveredik az elsődleges
+          művelettel. [H1]–[H10]: Nielsen heurisztikái.
+        </p>
+        <ol class="mt-5 grid gap-x-10 gap-y-3 text-sm leading-6 md:grid-cols-2">
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">1</b>
+            <p>
+              <strong>Statisztika</strong> a GET /api/admin/stats adataiból: felhasználók (tiltott,
+              admin), képek és rendelések állapotonként, bevétel, a láncon regisztrált hash-ek
+              száma. <span class="text-neutral-500">[H1]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">2</b>
+            <p>
+              <strong>Felhasználók:</strong> keresés névre és e-mailre, szűrés tiltás szerint
+              (blocked); lapozás a galériáéval azonos. A szűrők kapcsológombok (aria-pressed), a
+              sorok gombjainak neve a felhasználót is megnevezi („Letiltás: Fotós neve”).
+              <span class="text-neutral-500">[H6, H7]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">3</b>
+            <p>
+              <strong>Adminisztrátor nem tiltható</strong> – a saját fiók sem; a felület gombot sem
+              kínál rá. <span class="text-neutral-500">[H5]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">4</b>
+            <p>
+              <strong>Képek</strong> minden állapotban, állapot szerinti szűrővel (darabszámmal) – a
+              moderáláshoz a rejtett és a hibás képek is látszanak.
+              <span class="text-neutral-500">[H1, H6]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">5</b>
+            <p>
+              <strong>Moderátori elrejtés</strong> megerősítéssel; a vásárlók letöltése is szünetel,
+              amíg érvényben van. <span class="text-neutral-500">[H5]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">6</b>
+            <p>
+              <strong>Újrapróbálás</strong> csak sikertelen regisztrációnál; gázdíjba kerül, ezért
+              csak kézzel indul, és rövid ideig nem ismételhető.
+              <span class="text-neutral-500">[H5, H9]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">7</b>
+            <p>
+              <strong>Visszaállítás</strong> csak a moderátori levételnél. A tulajdonos saját
+              elrejtését az admin nem írja felül – ott nincs gomb, csak magyarázat.
+              <span class="text-neutral-500">[H4]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">8</b>
+            <p>
+              <strong>A tiltás következményei</strong> a megerősítésben felsorolva, a gomb felirata
+              az igét ismétli. <span class="text-neutral-500">[H5, H10]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">9</b>
+            <p>
+              <strong>Mobilon</strong> az admin táblázatai vízszintesen görgethetők (az adminfelület
+              elsődlegesen asztali használatra készül – adattáblánál ezt a WCAG 1.4.10 megengedi); a
+              görgethető tábla billentyűzettel is elérhető régió (tabindex="0", role="region"); a
+              statisztika kártyái két oszlopba rendeződnek.
+              <span class="text-neutral-500">[H8]</span>
+            </p>
+          </li>
+        </ol>
+      </div>
+    </aside>
+
+    <script>
+      lucide.createIcons();
+    </script>
+  </body>
+</html>

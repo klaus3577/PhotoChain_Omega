@@ -1,0 +1,42 @@
+# A Docker build-kontextusából kizárt fájlok (L31). A titkos kulcsok (.env) SOHA nem kerülhetnek a
+# képbe; a helyi függőségek és buildek sem (a konténer Linuxra telepít, a Windows-os node_modules nem
+# futna benne).
+# Forrás: Docker Docs – .dockerignore files,
+# https://docs.docker.com/build/concepts/context/#dockerignore-files (adaptálva)
+
+# Titkos kulcsok
+**/.env
+**/.env.*
+!**/.env.example
+**/*.pem
+**/*.key
+**/*.p12
+**/*.keystore
+**/.npmrc
+
+# Verziókezelés, szerkesztő, CI
+.git
+.github
+.vscode
+
+# Függőségek, buildek, generált fájlok (a képben újra készülnek)
+**/node_modules
+**/dist
+**/coverage
+**/*.tsbuildinfo
+server/src/generated
+
+# A konténerhez nem tartozó részek
+blockchain
+e2e
+docs
+tools
+server/tests
+server/scripts
+server/uploads
+
+# Tesztek és naplók maradványai
+**/test-results
+**/playwright-report
+**/logs
+**/*.log

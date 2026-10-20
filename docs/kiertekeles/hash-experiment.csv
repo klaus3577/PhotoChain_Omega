@@ -1,0 +1,103 @@
+photo,variant_id,variant,category,table,must_recognise,bytes,sha256_matches,dhash,distance,duplicate_at_threshold_10
+01_tocsa_tukrozodes.jpg,identity,ugyanaz a fájl,–,main,true,291096,true,f0e8f2f2b6f3f0f0,0,true
+01_tocsa_tukrozodes.jpg,original,teljes felbontású eredeti (originals/),A,main,true,9396466,false,f0c8f2f2b6f3f0f2,2,true
+01_tocsa_tukrozodes.jpg,resize50,kicsinyítés 50 %,A,main,true,90474,false,f0e8f3f2b2f3f0f0,2,true
+01_tocsa_tukrozodes.jpg,resize25,kicsinyítés 25 %,A,main,true,27961,false,f0e8f3f2b2f3f0f0,2,true
+01_tocsa_tukrozodes.jpg,jpeg60,JPEG-újratömörítés q60,A,main,true,155389,false,f0e8f2f2b2f3f0f0,1,true
+01_tocsa_tukrozodes.jpg,jpeg20,JPEG-újratömörítés q20,A,main,true,78160,false,f0e8f2f2b2f3f0f0,1,true
+01_tocsa_tukrozodes.jpg,webp80,WebP-konverzió q80,A,main,true,183028,false,f0c8f2f2b2f3e8d2,6,true
+01_tocsa_tukrozodes.jpg,brightness110,fényerő +10 %,A,main,true,290752,false,f0e8f2f2b2f3f0f0,1,true
+01_tocsa_tukrozodes.jpg,greyscale,szürkeárnyalat,A,main,true,260047,false,f0e8f2f2b2f3f0f0,1,true
+01_tocsa_tukrozodes.jpg,caption,szöveges felirat (alsó sáv),A,main,true,297591,false,f0e8f2f2b6f3f0d0,1,true
+01_tocsa_tukrozodes.jpg,crop5,vágás 5 % (minden oldalról),B,main,true,253507,false,f8c0e1b2b2f1f0a0,11,false
+01_tocsa_tukrozodes.jpg,crop10,vágás 10 % (minden oldalról),B,main,true,207471,false,d8c1e99b3ab1f4e0,20,false
+01_tocsa_tukrozodes.jpg,chain_messenger,üzenetküldőn át: 1080 px + JPEG q75,E,main,true,110559,false,f0c8f2f2b6f3f0f4,2,true
+01_tocsa_tukrozodes.jpg,chain_filter,"telefonos szűrő: kontraszt +15 %, telítettség +20 %, vinyetta",E,main,true,288667,false,f0e8f2f2b2f2f0f0,2,true
+01_tocsa_tukrozodes.jpg,chain_share,megosztás: 1200 px + vágás 2 % + JPEG q70,E,main,true,125427,false,f8c8e3f2b2f3f0b2,7,true
+01_tocsa_tukrozodes.jpg,mirror,tükrözés (vízszintes),D,main,false,287966,false,f0e8b0b09230f0d0,11,false
+01_tocsa_tukrozodes.jpg,rotate90,forgatás 90°,D,main,false,289398,false,f9f1f9e9f9fbf1f1,20,false
+01_tocsa_tukrozodes.jpg,crop1,vágás 1 % (minden oldalról),B,curve,true,281845,false,f0c8f2f2b2f3f0f0,2,true
+01_tocsa_tukrozodes.jpg,crop2,vágás 2 % (minden oldalról),B,curve,true,275531,false,f0c0e3f2b2f3f0b2,7,true
+01_tocsa_tukrozodes.jpg,crop3,vágás 3 % (minden oldalról),B,curve,true,268229,false,f8c8f1b2b2f3f4b2,9,true
+01_tocsa_tukrozodes.jpg,crop7,vágás 7 % (minden oldalról),B,curve,true,235864,false,f8c0e1b2b2f1f0a4,12,false
+01_tocsa_tukrozodes.jpg,crop_bottom5,vágás 5 % (csak alul),B,curve,true,284117,false,f0e8e3f296f3f0f4,4,true
+01_tocsa_tukrozodes.jpg,crop_bottom10,vágás 10 % (csak alul),B,curve,true,280029,false,f0e8e3f29ef2f3e4,9,true
+01_tocsa_tukrozodes.jpg,rotate05,"forgatás 0,5° (a sarkok levágva)",B,curve,true,263589,false,f0e8f0f2b2f3f0f4,3,true
+01_tocsa_tukrozodes.jpg,rotate1,forgatás 1° (a sarkok levágva),B,curve,true,264104,false,f0e8f1f2b6f3f0f4,3,true
+01_tocsa_tukrozodes.jpg,rotate2,forgatás 2° (a sarkok levágva),B,curve,true,261324,false,f0e8f1f2b6f3f0f4,3,true
+01_tocsa_tukrozodes.jpg,rotate5,forgatás 5° (a sarkok levágva),B,curve,true,259511,false,f0e8f1f2b6f2f0a4,6,true
+01_tocsa_tukrozodes.jpg,preview,a platform vízjeles előnézete,C,main,true,203697,false,f0c0f2f2b2f3f0d2,5,true
+01_tocsa_tukrozodes.jpg,preview_original,a platform előnézete a teljes felbontású eredetiből (az eredetihez mérve),C,main,true,203017,false,f0c0f2f2b2f3f0d2,3,true
+01_tocsa_tukrozodes.jpg,preview_nowm,"előnézet vízjel nélkül (1200 px, kontroll)",C,watermark,true,159977,false,f0c0f2f2b6f3f0f0,2,true
+01_tocsa_tukrozodes.jpg,preview_wm15,"előnézet, a vízjel átlátszatlansága 0,15",C,watermark,true,177109,false,f0c0f2f2b6f3f0d0,3,true
+01_tocsa_tukrozodes.jpg,preview_wm25,"előnézet, a vízjel átlátszatlansága 0,25",C,watermark,true,188878,false,f0c0f2f2b6f3f0d2,4,true
+01_tocsa_tukrozodes.jpg,preview_wm35,"előnézet, a vízjel átlátszatlansága 0,35",C,watermark,true,197392,false,f0c0f2f2b2f3f0d2,5,true
+01_tocsa_tukrozodes.jpg,preview_wm45,"előnézet, a vízjel átlátszatlansága 0,45 (a platform alapértéke)",C,watermark,true,203697,false,f0c0f2f2b2f3f0d2,5,true
+02_gyertyak.jpg,identity,ugyanaz a fájl,–,main,true,148879,true,989890b0e0d85820,0,true
+02_gyertyak.jpg,original,teljes felbontású eredeti (originals/),A,main,true,22439472,false,b89890b0e0d85820,1,true
+02_gyertyak.jpg,resize50,kicsinyítés 50 %,A,main,true,28966,false,989990b0e0d85822,2,true
+02_gyertyak.jpg,resize25,kicsinyítés 25 %,A,main,true,7804,false,989890b0e0d858a0,1,true
+02_gyertyak.jpg,jpeg60,JPEG-újratömörítés q60,A,main,true,40526,false,989890b0e0d85821,1,true
+02_gyertyak.jpg,jpeg20,JPEG-újratömörítés q20,A,main,true,17559,false,989890b0e0d8d820,1,true
+02_gyertyak.jpg,webp80,WebP-konverzió q80,A,main,true,42004,false,b89890b0e0d87802,4,true
+02_gyertyak.jpg,brightness110,fényerő +10 %,A,main,true,153731,false,989890b0e0d85822,1,true
+02_gyertyak.jpg,greyscale,szürkeárnyalat,A,main,true,135641,false,b89990b0e0d85821,3,true
+02_gyertyak.jpg,caption,szöveges felirat (alsó sáv),A,main,true,155991,false,989890b0e0d85832,2,true
+02_gyertyak.jpg,crop5,vágás 5 % (minden oldalról),B,main,true,135529,false,19d09030e0d8dc20,7,true
+02_gyertyak.jpg,crop10,vágás 10 % (minden oldalról),B,main,true,117100,false,989010b4e0d09cc0,10,true
+02_gyertyak.jpg,chain_messenger,üzenetküldőn át: 1080 px + JPEG q75,E,main,true,32481,false,989990b0e0d85822,2,true
+02_gyertyak.jpg,chain_filter,"telefonos szűrő: kontraszt +15 %, telítettség +20 %, vinyetta",E,main,true,150336,false,b8d890b0e0d8d8e0,5,true
+02_gyertyak.jpg,chain_share,megosztás: 1200 px + vágás 2 % + JPEG q70,E,main,true,48294,false,98d890b0e0d8d820,2,true
+02_gyertyak.jpg,mirror,tükrözés (vízszintes),D,main,false,148814,false,62647672f8e46010,31,false
+02_gyertyak.jpg,rotate90,forgatás 90°,D,main,false,150777,false,4969e670f8d8d040,22,false
+02_gyertyak.jpg,crop1,vágás 1 % (minden oldalról),B,curve,true,149546,false,989890b0e0d85822,1,true
+02_gyertyak.jpg,crop2,vágás 2 % (minden oldalról),B,curve,true,146237,false,98d890b0e0d8d822,3,true
+02_gyertyak.jpg,crop3,vágás 3 % (minden oldalról),B,curve,true,139107,false,b8d890b0e0d8d822,4,true
+02_gyertyak.jpg,crop7,vágás 7 % (minden oldalról),B,curve,true,128119,false,19903030e0d0dc80,11,false
+02_gyertyak.jpg,crop_bottom5,vágás 5 % (csak alul),B,curve,true,144941,false,b89890b0e0f05840,5,true
+02_gyertyak.jpg,crop_bottom10,vágás 10 % (csak alul),B,curve,true,140118,false,b89890b0f0e0d848,9,true
+02_gyertyak.jpg,rotate05,"forgatás 0,5° (a sarkok levágva)",B,curve,true,128117,false,989890b0e0d878a0,2,true
+02_gyertyak.jpg,rotate1,forgatás 1° (a sarkok levágva),B,curve,true,125521,false,98d890b0e0d858e2,4,true
+02_gyertyak.jpg,rotate2,forgatás 2° (a sarkok levágva),B,curve,true,126759,false,98d990b0e0d898f2,8,true
+02_gyertyak.jpg,rotate5,forgatás 5° (a sarkok levágva),B,curve,true,125204,false,98d990b0e0d0d8f2,8,true
+02_gyertyak.jpg,preview,a platform vízjeles előnézete,C,main,true,128823,false,b2d99170e0326499,22,false
+02_gyertyak.jpg,preview_original,a platform előnézete a teljes felbontású eredetiből (az eredetihez mérve),C,main,true,124903,false,b0d99170e0326c99,19,false
+02_gyertyak.jpg,preview_nowm,"előnézet vízjel nélkül (1200 px, kontroll)",C,watermark,true,62931,false,989890b0e0d85802,2,true
+02_gyertyak.jpg,preview_wm15,"előnézet, a vízjel átlátszatlansága 0,15",C,watermark,true,92708,false,b8d99130e0f06c99,15,false
+02_gyertyak.jpg,preview_wm25,"előnézet, a vízjel átlátszatlansága 0,25",C,watermark,true,108658,false,b8d99130e0f06c99,15,false
+02_gyertyak.jpg,preview_wm35,"előnézet, a vízjel átlátszatlansága 0,35",C,watermark,true,119886,false,b8d99170e0706c99,17,false
+02_gyertyak.jpg,preview_wm45,"előnézet, a vízjel átlátszatlansága 0,45 (a platform alapértéke)",C,watermark,true,128823,false,b2d99170e0326499,22,false
+03_basszusgitar.jpg,identity,ugyanaz a fájl,–,main,true,250595,true,40d0e1301b57762e,0,true
+03_basszusgitar.jpg,original,teljes felbontású eredeti (originals/),A,main,true,19655060,false,40d0e1301b57f62e,1,true
+03_basszusgitar.jpg,resize50,kicsinyítés 50 %,A,main,true,72463,false,40d0e1325b57762e,2,true
+03_basszusgitar.jpg,resize25,kicsinyítés 25 %,A,main,true,25164,false,40d0e1325b57762e,2,true
+03_basszusgitar.jpg,jpeg60,JPEG-újratömörítés q60,A,main,true,110163,false,40c0e1301b57762e,1,true
+03_basszusgitar.jpg,jpeg20,JPEG-újratömörítés q20,A,main,true,50121,false,40d0e1301b57762e,0,true
+03_basszusgitar.jpg,webp80,WebP-konverzió q80,A,main,true,116196,false,40d0e1301b57f62e,1,true
+03_basszusgitar.jpg,brightness110,fényerő +10 %,A,main,true,253236,false,40d0e1301b57762e,0,true
+03_basszusgitar.jpg,greyscale,szürkeárnyalat,A,main,true,225749,false,40c0e1301b57762e,1,true
+03_basszusgitar.jpg,caption,szöveges felirat (alsó sáv),A,main,true,253744,false,40d0e1301b57761e,2,true
+03_basszusgitar.jpg,crop5,vágás 5 % (minden oldalról),B,main,true,208829,false,40c0f1321bd3763e,6,true
+03_basszusgitar.jpg,crop10,vágás 10 % (minden oldalról),B,main,true,169480,false,1084f8729d9bf67e,20,false
+03_basszusgitar.jpg,chain_messenger,üzenetküldőn át: 1080 px + JPEG q75,E,main,true,84210,false,40d0e1301b57f62e,1,true
+03_basszusgitar.jpg,chain_filter,"telefonos szűrő: kontraszt +15 %, telítettség +20 %, vinyetta",E,main,true,257161,false,e0d0e0309b56762e,5,true
+03_basszusgitar.jpg,chain_share,megosztás: 1200 px + vágás 2 % + JPEG q70,E,main,true,97959,false,40d0e1301b57f63e,2,true
+03_basszusgitar.jpg,mirror,tükrözés (vízszintes),D,main,false,251927,false,fdf478f32715908b,31,false
+03_basszusgitar.jpg,rotate90,forgatás 90°,D,main,false,250627,false,63666edefa9490e1,38,false
+03_basszusgitar.jpg,crop1,vágás 1 % (minden oldalról),B,curve,true,243319,false,40d0f1321b57f62e,3,true
+03_basszusgitar.jpg,crop2,vágás 2 % (minden oldalról),B,curve,true,235032,false,40d0e1321b57f63e,3,true
+03_basszusgitar.jpg,crop3,vágás 3 % (minden oldalról),B,curve,true,223490,false,60c0f1321b57f63e,6,true
+03_basszusgitar.jpg,crop7,vágás 7 % (minden oldalról),B,curve,true,191504,false,50c4f1329d9bf63e,14,false
+03_basszusgitar.jpg,crop_bottom5,vágás 5 % (csak alul),B,curve,true,237276,false,40d0e1321b4f763e,4,true
+03_basszusgitar.jpg,crop_bottom10,vágás 10 % (csak alul),B,curve,true,224000,false,40d0e172995b763e,7,true
+03_basszusgitar.jpg,rotate05,"forgatás 0,5° (a sarkok levágva)",B,curve,true,224501,false,c0d0e1301b57762e,1,true
+03_basszusgitar.jpg,rotate1,forgatás 1° (a sarkok levágva),B,curve,true,224270,false,80d0e1301b57762e,2,true
+03_basszusgitar.jpg,rotate2,forgatás 2° (a sarkok levágva),B,curve,true,221880,false,a0d0e1301b57762e,3,true
+03_basszusgitar.jpg,rotate5,forgatás 5° (a sarkok levágva),B,curve,true,219652,false,a0d0e0b81b567c6e,10,true
+03_basszusgitar.jpg,preview,a platform vízjeles előnézete,C,main,true,176210,false,40d0e1301b57f62e,1,true
+03_basszusgitar.jpg,preview_original,a platform előnézete a teljes felbontású eredetiből (az eredetihez mérve),C,main,true,173445,false,40d0e1301b57f63e,1,true
+03_basszusgitar.jpg,preview_nowm,"előnézet vízjel nélkül (1200 px, kontroll)",C,watermark,true,128007,false,40d0e1301b57762e,0,true
+03_basszusgitar.jpg,preview_wm15,"előnézet, a vízjel átlátszatlansága 0,15",C,watermark,true,145224,false,40d0e1301b57f62e,1,true
+03_basszusgitar.jpg,preview_wm25,"előnézet, a vízjel átlátszatlansága 0,25",C,watermark,true,158422,false,40d0e1301b57762e,0,true
+03_basszusgitar.jpg,preview_wm35,"előnézet, a vízjel átlátszatlansága 0,35",C,watermark,true,168073,false,40d0e1301b57f63e,2,true
+03_basszusgitar.jpg,preview_wm45,"előnézet, a vízjel átlátszatlansága 0,45 (a platform alapértéke)",C,watermark,true,176210,false,40d0e1301b57f62e,1,true

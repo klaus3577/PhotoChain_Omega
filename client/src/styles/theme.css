@@ -1,0 +1,93 @@
+/*
+ * PhotoChain – design tokenek (L17): a Tailwind CSS v4 témája. Ez a tokenek egyetlen forrása: a
+ * kliens a Tailwind után importálja (src/styles/index.css, L18), a stílusútmutatót
+ * (docs/design/stilusutmutato.html) a tools/design/styleguide.mjs ebből generálja, a színpárosok
+ * kontrasztját a tools/design/contrast.mjs ellenőrzi (WCAG 2.2 AA). Az L18-ban költözött ide a
+ * docs/design/ alól, hogy a kliens buildje önállóan, a dokumentáció nélkül is működjön.
+ *
+ * Arculat (szerzői döntés, 2026-10-08): fekete-fehér, minimalista felület egyetlen piros
+ * kiemelőszínnel; világos téma (a sötét mód később adható hozzá). A zöld és a borostyán nem díszítő
+ * szín, hanem állapotjelző: zöld = a blokkláncon hitelesített (csak erre használjuk), borostyán =
+ * folyamatban vagy figyelmet kér.
+ * A piros egyszerre kiemelő- és hibaszín – ezért a hiba mindig ikonnal és szöveggel jelenik meg, nem
+ * csak színnel (WCAG 1.4.1).
+ *
+ * A komponensek a szerepalapú (szemantikus) neveket használják (pl. bg-canvas, text-fg,
+ * bg-primary), nem a skálák fokozatait – így egy későbbi sötét téma csak ezeket írja felül.
+ *
+ * Forrás: Tailwind CSS v4 – Theme variables (@theme, a névterek és az alapértékek törlése),
+ * https://tailwindcss.com/docs/theme; W3C – WCAG 2.2 (1.4.1, 1.4.3, 1.4.11),
+ * https://www.w3.org/TR/WCAG22/ (adaptálva)
+ */
+@theme {
+  /* Csak a saját palettánk: a Tailwind alapszínei nem használhatók (egységes arculat) */
+  --color-*: initial;
+
+  /* Betűk: Inter a szövegnek, JetBrains Mono a hash-eknek és a tranzakció-azonosítóknak. A kliens
+     saját hosztolással tölti be őket (@fontsource), nem a Google CDN-ről (adatvédelem). */
+  --font-sans: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Alap: fehér, fekete és a semleges szürkeskála */
+  --color-white: #ffffff;
+  --color-black: #0a0a0a;
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e5e5e5;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-400: #a3a3a3;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #525252;
+  --color-neutral-700: #404040;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
+  --color-neutral-950: #0a0a0a;
+
+  /* Kiemelőszín: piros (elsődleges művelet, aktív elem, hiba) */
+  --color-accent-50: #fff1f2;
+  --color-accent-100: #ffe1e3;
+  --color-accent-200: #ffc7cc;
+  --color-accent-600: #d7192d;
+  --color-accent-700: #b4111f;
+
+  /* Állapot: hitelesítve a blokkláncon (zöld). Az ikon a szöveg színét örökli (trust-700) – a
+     világosabb fokozat ikonként is csak 3:1 körüli lenne, szövegként pedig kevés */
+  --color-trust-50: #f0fdf4;
+  --color-trust-200: #bbf7d0;
+  --color-trust-700: #15803d;
+
+  /* Állapot: figyelem – folyamatban vagy ellenőrzést kér, pl. a lánc-regisztrációra vár, illetve
+     hasonló regisztrált képet találtunk (borostyán) */
+  --color-caution-50: #fffbeb;
+  --color-caution-200: #fde68a;
+  --color-caution-700: #b45309;
+
+  /* Szerepalapú nevek – a komponensek ezeket használják */
+  --color-canvas: var(--color-white);
+  --color-surface: var(--color-neutral-50);
+  --color-fg: var(--color-neutral-950);
+  --color-fg-muted: var(--color-neutral-600);
+  --color-line: var(--color-neutral-200);
+  --color-line-strong: var(--color-neutral-500);
+  --color-primary: var(--color-accent-600);
+  --color-primary-hover: var(--color-accent-700);
+  --color-on-primary: var(--color-white);
+  --color-danger: var(--color-accent-700);
+  --color-danger-surface: var(--color-accent-50);
+  --color-focus: var(--color-neutral-950);
+
+  /* Sarkok és árnyék: visszafogott, minimalista */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --shadow-card: 0 1px 2px 0 rgb(10 10 10 / 0.06), 0 1px 3px 0 rgb(10 10 10 / 0.08);
+}
+
+/* A helykitöltő szöveg a Tailwind alapján a szövegszín 50%-a (kb. 3,7:1) – nálunk a másodlagos
+   szöveg színe, így eléri a 4,5:1-et (WCAG 1.4.3) */
+@layer base {
+  ::placeholder {
+    color: var(--color-fg-muted);
+    opacity: 1;
+  }
+}

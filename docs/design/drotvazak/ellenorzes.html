@@ -1,0 +1,426 @@
+<!doctype html>
+<!--
+  PhotoChain – drótváz: Hitelesség-ellenőrzés (L17). Lo-fi, szürkeárnyalatos vázlat: az elrendezést, a
+  tartalmat és a viselkedést mutatja; a végleges színek és komponensek a docs/design/stilusutmutato.html-ben
+  vannak. Önálló fájl (a betűk, a Tailwind és az ikonok CDN-ről), így külön megnyitható és lefényképezhető.
+  Reszponzív: ugyanaz a fájl mobilon (390 px) és asztali nézetben (1440 px).
+-->
+<html lang="hu">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Drótváz – Ellenőrzés · PhotoChain</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@fontsource-variable/inter@5.3.0/index.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@fontsource-variable/jetbrains-mono@5.3.0/index.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@1.53.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+      @theme {
+        --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+        --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+      }
+      /* Képhelyőrző: áthúzott téglalap (a drótvázak szokásos jele) */
+      @utility wf-img {
+        background:
+          linear-gradient(
+            to top right,
+            transparent calc(50% - 1px),
+            var(--color-neutral-300) 50%,
+            transparent calc(50% + 1px)
+          ),
+          linear-gradient(
+            to bottom right,
+            transparent calc(50% - 1px),
+            var(--color-neutral-300) 50%,
+            transparent calc(50% + 1px)
+          ),
+          var(--color-neutral-100);
+      }
+      /* Számozott jegyzetjel: a lap alján lévő azonos számú jegyzetre utal */
+      @utility wf-note {
+        display: inline-grid;
+        flex-shrink: 0;
+        place-items: center;
+        width: 1.375rem;
+        height: 1.375rem;
+        border-radius: 9999px;
+        background: var(--color-neutral-900);
+        color: var(--color-white);
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1;
+      }
+    </style>
+  </head>
+  <body class="bg-white font-sans text-neutral-900 antialiased">
+    <header class="border-b border-neutral-300">
+      <div class="mx-auto flex h-16 max-w-7xl items-center gap-8 px-4 sm:px-6 lg:px-8">
+        <a href="#" class="text-lg font-semibold tracking-tight">PhotoChain</a>
+        <nav aria-label="Fő navigáció" class="hidden h-full items-center gap-6 text-sm md:flex">
+          <a href="#" class="text-neutral-600">Galéria</a>
+          <a
+            href="#"
+            aria-current="page"
+            class="flex h-full items-center border-b-2 border-neutral-900 font-semibold"
+            >Ellenőrzés</a
+          >
+          <a href="#" class="text-neutral-600">Vezérlőpult</a>
+        </nav>
+        <div class="ml-auto flex items-center gap-2">
+          <a
+            href="#"
+            class="hidden h-9 items-center rounded-md border border-neutral-400 px-3 text-sm font-medium sm:inline-flex"
+            >Bejelentkezés</a
+          >
+          <button
+            type="button"
+            class="grid size-9 place-items-center rounded-md border border-neutral-300 md:hidden"
+            aria-label="Menü"
+            aria-expanded="false"
+          >
+            <i data-lucide="menu" class="size-5"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+      <h1 class="text-3xl font-semibold tracking-tight">Kép ellenőrzése</h1>
+      <p class="mt-1 max-w-3xl text-sm leading-6 text-neutral-600">
+        Tölts fel egy képet – vagy add meg a SHA-256 hash-ét –, és megmutatjuk, szerepel-e a
+        PhotoChain blokkláncon vezetett nyilvántartásában. Bejelentkezés nem kell, a képet nem
+        tároljuk.
+      </p>
+
+      <div class="mt-6 max-w-3xl rounded-lg border border-neutral-300 p-4 sm:p-6">
+        <div class="flex items-end gap-3 border-b border-neutral-300">
+          <b aria-hidden="true" class="wf-note mb-2">1</b>
+          <div role="tablist" aria-label="Ellenőrzés módja" class="flex gap-6 text-sm">
+            <button
+              type="button"
+              role="tab"
+              id="ful-kep"
+              aria-controls="panel-kep"
+              aria-selected="true"
+              tabindex="0"
+              class="-mb-px border-b-2 border-neutral-900 pb-2.5 font-semibold"
+            >
+              Kép feltöltése
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="ful-hash"
+              aria-controls="panel-hash"
+              aria-selected="false"
+              tabindex="-1"
+              class="-mb-px border-b-2 border-transparent pb-2.5 text-neutral-600"
+            >
+              Hash megadása
+            </button>
+          </div>
+        </div>
+        <div
+          role="tabpanel"
+          id="panel-kep"
+          aria-labelledby="ful-kep"
+          class="mt-4 flex flex-col items-center gap-3 rounded-lg border-2 border-dashed border-neutral-400 bg-neutral-50 px-6 py-6 text-center sm:flex-row sm:text-left"
+        >
+          <i data-lucide="image-up" class="size-8 shrink-0 text-neutral-500"></i>
+          <p class="flex-1 text-sm">
+            <span class="block font-medium">Húzd ide az ellenőrizendő képet</span
+            ><span class="text-neutral-600"
+              >JPEG, PNG vagy WebP · legfeljebb 15 MB · a rövidebb oldal legalább 100 px</span
+            >
+          </p>
+          <span
+            class="inline-flex h-10 items-center rounded-md border border-neutral-400 bg-white px-4 text-sm font-medium"
+            >Tallózás…</span
+          >
+        </div>
+        <div role="tabpanel" id="panel-hash" aria-labelledby="ful-hash" hidden class="mt-4">
+          <label class="block text-sm font-medium"
+            >SHA-256 hash
+            <input
+              aria-describedby="hash-sugo"
+              class="mt-1.5 block h-10 w-full rounded-md border border-neutral-400 px-3 font-mono text-sm font-normal"
+              placeholder="0x…"
+            />
+          </label>
+          <p id="hash-sugo" class="mt-1.5 text-sm text-neutral-600">
+            64 hexadecimális karakter, a 0x előtag elhagyható.
+          </p>
+        </div>
+        <p
+          class="mt-3 flex items-start gap-2 rounded-md border border-dashed border-neutral-400 px-3 py-2 text-sm text-neutral-700"
+        >
+          <b aria-hidden="true" class="wf-note">6</b
+          ><span
+            ><strong>Hibaváltozat:</strong> „A blokklánc most nem érhető el – próbáld újra egy perc
+            múlva.” (503)</span
+          >
+        </p>
+      </div>
+
+      <section aria-labelledby="eredmenyek" class="mt-10">
+        <h2 id="eredmenyek" class="text-xl font-semibold tracking-tight">
+          A három lehetséges eredmény
+        </h2>
+        <div class="mt-5 grid gap-5 lg:grid-cols-3">
+          <article class="flex flex-col rounded-lg border-2 border-neutral-900">
+            <header
+              class="flex items-center gap-2 border-b border-neutral-300 bg-neutral-100 px-4 py-3"
+            >
+              <b aria-hidden="true" class="wf-note">2</b
+              ><i data-lucide="shield-check" class="size-5"></i>
+              <h3 class="font-semibold">Hiteles, regisztrált kép</h3>
+            </header>
+            <div class="flex flex-1 flex-col p-4">
+              <p class="text-sm leading-6 text-neutral-700">
+                A fájl bitre megegyezik egy, a blokkláncon regisztrált képpel.
+              </p>
+              <div class="mt-3 flex items-center gap-3">
+                <div class="wf-img h-14 w-20 shrink-0 rounded-md border border-neutral-300"></div>
+                <p class="min-w-0 text-sm">
+                  <a href="#" class="block truncate font-medium underline underline-offset-2"
+                    >Őszi erdő ködben</a
+                  ><span class="text-neutral-600">Fotós neve</span>
+                </p>
+              </div>
+              <dl class="mt-3 divide-y divide-neutral-200 text-sm">
+                <div class="flex justify-between gap-3 py-2">
+                  <dt class="text-neutral-500">Regisztrálva</dt>
+                  <dd>2026. 10. 04. 14:32</dd>
+                </div>
+                <div class="flex justify-between gap-3 py-2">
+                  <dt class="text-neutral-500">Blokk</dt>
+                  <dd class="font-mono">#9 412 337</dd>
+                </div>
+                <div class="flex items-center justify-between gap-3 py-2">
+                  <dt class="text-neutral-500">Tranzakció</dt>
+                  <dd class="flex items-center gap-1 font-mono underline underline-offset-2">
+                    0x9c4e…1b7a<i data-lucide="external-link" class="size-3.5"></i>
+                  </dd>
+                </div>
+              </dl>
+              <span
+                class="mt-auto inline-flex h-10 w-fit items-center rounded-md border border-neutral-400 px-4 text-sm font-medium"
+                >Adatlap megnyitása</span
+              >
+            </div>
+          </article>
+
+          <article class="flex flex-col rounded-lg border border-neutral-400">
+            <header
+              class="flex items-center gap-2 border-b border-neutral-300 bg-neutral-100 px-4 py-3"
+            >
+              <b aria-hidden="true" class="wf-note">3</b
+              ><i data-lucide="scan-search" class="size-5"></i>
+              <h3 class="font-semibold">Hasonló regisztrált kép</h3>
+            </header>
+            <div class="flex flex-1 flex-col p-4">
+              <p class="text-sm leading-6 text-neutral-700">
+                Nem azonos fájl, de egy regisztrált kép módosított – például átméretezett vagy
+                újratömörített – változata lehet.
+              </p>
+              <div class="mt-3 flex items-center gap-3">
+                <div class="wf-img h-14 w-20 shrink-0 rounded-md border border-neutral-300"></div>
+                <p class="min-w-0 text-sm">
+                  <a href="#" class="block truncate font-medium underline underline-offset-2"
+                    >Őszi erdő ködben</a
+                  ><span class="text-neutral-600">Fotós neve</span>
+                </p>
+              </div>
+              <div class="mt-3 text-sm">
+                <p class="flex justify-between">
+                  <span class="text-neutral-500">Eltérés a vizuális ujjlenyomatban</span
+                  ><strong>3 / 64 bit</strong>
+                </p>
+                <div class="mt-2 grid grid-cols-16 gap-0.5" aria-hidden="true">
+                  <span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-900"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-900"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span>
+                  <span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span>
+                  <span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span>
+                  <span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-900"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span
+                  ><span class="h-2 bg-neutral-300"></span><span class="h-2 bg-neutral-300"></span>
+                </div>
+              </div>
+              <span
+                class="mt-4 inline-flex h-10 w-fit items-center rounded-md border border-neutral-400 px-4 text-sm font-medium"
+                >Az eredeti adatlapja</span
+              >
+            </div>
+          </article>
+
+          <article class="flex flex-col rounded-lg border border-neutral-300">
+            <header
+              class="flex items-center gap-2 border-b border-neutral-300 bg-neutral-50 px-4 py-3"
+            >
+              <b aria-hidden="true" class="wf-note">4</b
+              ><i data-lucide="search-x" class="size-5"></i>
+              <h3 class="font-semibold">Nincs a nyilvántartásban</h3>
+            </header>
+            <div class="flex flex-1 flex-col p-4">
+              <p class="text-sm leading-6 text-neutral-700">
+                Sem azonos, sem hasonló regisztrált képet nem találtunk. Ez nem jelenti, hogy a kép
+                hamis – csak azt, hogy nem a PhotoChainen regisztrálták.
+              </p>
+              <dl class="mt-3 text-sm">
+                <dt class="text-neutral-500">A vizsgált fájl SHA-256 hash-e</dt>
+                <dd class="mt-1 flex items-center gap-2 font-mono text-xs break-all">
+                  0x3be1f07c94a2…7d10c58e<button
+                    type="button"
+                    aria-label="A teljes hash másolása"
+                    class="grid size-9 shrink-0 place-items-center rounded-md text-neutral-600"
+                  >
+                    <i data-lucide="copy" class="size-4"></i>
+                  </button>
+                </dd>
+              </dl>
+              <span
+                class="mt-auto inline-flex h-10 w-fit items-center rounded-md border border-neutral-400 px-4 text-sm font-medium"
+                >Másik kép ellenőrzése</span
+              >
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="hogyan" class="mt-10 border-t border-neutral-300 pt-8">
+        <h2 id="hogyan" class="flex items-center gap-2 text-xl font-semibold tracking-tight">
+          <b aria-hidden="true" class="wf-note">5</b>Hogyan működik?
+        </h2>
+        <div class="mt-5 grid gap-5 md:grid-cols-3">
+          <div class="rounded-lg border border-neutral-300 p-4 text-sm leading-6">
+            <p class="flex items-center gap-2 font-semibold">
+              <i data-lucide="fingerprint" class="size-5"></i>Digitális ujjlenyomat (SHA-256)
+            </p>
+            <p class="mt-2 text-neutral-700">
+              A fájl tartalmából számolt 64 jegyű azonosító. Egyetlen bit változása is teljesen más
+              értéket ad – így a bitre azonos másolatot ismeri fel.
+            </p>
+          </div>
+          <div class="rounded-lg border border-neutral-300 p-4 text-sm leading-6">
+            <p class="flex items-center gap-2 font-semibold">
+              <i data-lucide="scan-eye" class="size-5"></i>Vizuális ujjlenyomat (dHash)
+            </p>
+            <p class="mt-2 text-neutral-700">
+              A kép kicsinyített, szürke változatának világosságkülönbségeiből számolt 64 bit.
+              Átméretezés vagy újratömörítés után is szinte ugyanaz – így a módosított másolatot is
+              felismeri.
+            </p>
+          </div>
+          <div class="rounded-lg border border-neutral-300 p-4 text-sm leading-6">
+            <p class="flex items-center gap-2 font-semibold">
+              <i data-lucide="link" class="size-5"></i>Blokklánc (Ethereum Sepolia)
+            </p>
+            <p class="mt-2 text-neutral-700">
+              Az ujjlenyomatot és az időpontot egy okosszerződés őrzi. A rekordot utólag senki nem
+              módosíthatja – a PhotoChain sem –, és bárki ellenőrizheti.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="border-t-2 border-dashed border-neutral-300 bg-neutral-50">
+      <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <p class="text-xs font-semibold tracking-wider text-neutral-500 uppercase">Drótváz · L17</p>
+        <h2 class="mt-1 text-lg font-semibold">Ellenőrzés – jegyzetek</h2>
+        <p class="mt-1 max-w-3xl text-sm text-neutral-600">
+          Lo-fi vázlat: a végleges felületen az eredmény színe a bizalom vizuális nyelvét követi –
+          hiteles: zöld, hasonló: borostyán, nincs találat: semleges szürke (stílusútmutató).
+          [H1]–[H10]: Nielsen heurisztikái.
+        </p>
+        <ol class="mt-5 grid gap-x-10 gap-y-3 text-sm leading-6 md:grid-cols-2">
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">1</b>
+            <p>
+              <strong>Kétféle bemenet:</strong> kép feltöltése vagy SHA-256 hash beírása (pl. egy
+              tanúsítványból másolva). Bejelentkezés nélkül használható; a vizsgált fájl nem
+              tárolódik. A két mód WAI-ARIA fülsor (nyilakkal váltható); a „Tallózás…” gomb a húzás
+              alternatívája (WCAG 2.5.7). <span class="text-neutral-500">[H7]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">2</b>
+            <p>
+              <strong>VERIFIED:</strong> a lánc rekordja az igazságforrás. A regisztráció ideje
+              mindig látszik, a tranzakció akkor, ha ismert (különben „A tranzakció adatai nem
+              érhetők el”); a kép adatai csak akkor, ha a kép nyilvános. Bármelyik eredmény
+              megjelenésekor a fókusz az eredmény címére kerül, így a képernyőolvasó is azonnal
+              bemondja (WCAG 4.1.3). <span class="text-neutral-500">[H1]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">3</b>
+            <p>
+              <strong>SIMILAR:</strong> az eltérés mértéke számmal és a 64 bites ujjlenyomat
+              sávjával – érthetővé teszi, mennyire hasonló. Nem vádol, csak tájékoztat.
+              <span class="text-neutral-500">[H1, H2]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">4</b>
+            <p>
+              <strong>NOT_FOUND:</strong> semleges hangvétel; a kiszámolt hash másolható, így később
+              újra ellenőrizhető. <span class="text-neutral-500">[H2]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">5</b>
+            <p>
+              <strong>„Hogyan működik?”</strong> – három rövid, szakzsargon nélküli magyarázat; az
+              adatlap „Mit jelent ez?” hivatkozása is ide mutat.
+              <span class="text-neutral-500">[H10]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">6</b>
+            <p>
+              <strong>Hibák emberi nyelven, teendővel:</strong> a lánc nem érhető el (503), túl
+              kicsi kép (a rövidebb oldal 100 px alatt), túl nagy fájl, nem támogatott formátum.
+              <span class="text-neutral-500">[H9]</span>
+            </p>
+          </li>
+        </ol>
+      </div>
+    </aside>
+
+    <script>
+      lucide.createIcons();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,9 @@
+# PhotoChain – a keresőrobotok szabályai (L31). A nyilvános oldalak (galéria, adatlap, ellenőrzés)
+# bejárhatók; az API, a bejelentkezéshez kötött és az adminisztrációs oldalak nem.
+# Forrás: RFC 9309 – Robots Exclusion Protocol, https://www.rfc-editor.org/rfc/rfc9309 (adaptálva)
+User-agent: *
+Disallow: /api/
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /upload
+Disallow: /checkout/

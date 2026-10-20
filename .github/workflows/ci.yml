@@ -1,0 +1,194 @@
+# Folyamatos integráció (L27, L28): a main ágra érkező push-ra, minden pull requestre és kézi
+# indításra formázás-ellenőrzés, lint, a design- és az okosszerződés-tesztek, típusellenőrzés (a
+# fordítás után), a szerver- és a klienstesztek lefedettséggel (80 %-os küszöb mindkét
+# alprojektben), végül a produkciós build – ugyanaz, mint helyben a `npm run check` és a
+# `npm run build`, csak külön lépésekben, hogy a kliens jelentése akkor is elkészüljön, ha a
+# szerveré bukott. Külön feladatban (e2e) a Playwright end-to-end tesztek. A szerver
+# adatbázis-tesztjeihez és az E2E-futáshoz PostgreSQL 17 szolgáltatás-konténer fut (a
+# tesztadatbázis neve „_test” végű, mert a tesztek kiürítik); a lánctesztek és az E2E-futás saját
+# lokális Hardhat-hálózatot indítanak; a Stripe hamisított (tesztkulcsok, aláírt tesztesemények).
+# Titkos kulcs nem kell: a Sepolia-hálózatot és a Stripe-ot a CI nem éri el.
+# Forrás: GitHub Docs – Building and testing Node.js,
+# https://docs.github.com/en/actions/use-cases-and-examples/building-and-testing/building-and-testing-nodejs;
+# GitHub Docs – Creating PostgreSQL service containers,
+# https://docs.github.com/en/actions/use-cases-and-examples/using-containerized-services/creating-postgresql-service-containers
+# (adaptálva)
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # Kézi indítás a GitHub felületéről (Actions → CI → Run workflow)
+  workflow_dispatch:
+
+# A munkafolyamat tokenje csak olvas (a repóba nem ír, csomagot nem tesz közzé)
+permissions:
+  contents: read
+
+# Ugyanarra az ágra érkező újabb push leállítja a még futó ellenőrzést
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Ellenőrzés, tesztek, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: photochain
+          POSTGRES_PASSWORD: photochain
+          POSTGRES_DB: photochain_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U photochain -d photochain_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      # A munkafolyamat tokenje ne maradjon a .git/config-ban: egyik lépés sem használ git-hitelesítést
+      - name: Forrás letöltése
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Node.js 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            blockchain/package-lock.json
+            server/package-lock.json
+            client/package-lock.json
+            e2e/package-lock.json
+
+      # Az alprojektek külön package.json-nal (nincs workspace); a szerver `postinstall`-ja a
+      # Prisma-klienst generálja
+      - name: Függőségek telepítése
+        run: |
+          npm ci
+          npm ci --prefix blockchain
+          npm ci --prefix server
+          npm ci --prefix client
+          npm ci --prefix e2e
+
+      # A `npm run check` lépései külön (a sorrend ugyanaz)
+      - name: Formázás és lint
+        run: npm run format:check && npm run lint
+
+      - name: Design- és okosszerződés-tesztek (a szerződés fordítása)
+        run: npm run design:test && npm run test --prefix blockchain
+
+      # A fordítás után: a blockchain típusai a generált szerződés-típusokkal; az e2e tesztek típusai is
+      - name: Típusellenőrzés
+        run: npm run typecheck
+
+      - name: Szervertesztek lefedettséggel
+        env:
+          # A szerver adatbázis-tesztjei (vitest `db` projekt) – csak a CI szolgáltatás-konténeréé,
+          # és csak ennek a lépésnek
+          TEST_DATABASE_URL: postgresql://photochain:photochain@localhost:5432/photochain_test
+        run: npm run coverage --prefix server
+
+      # A kliens tesztjei és jelentése akkor is elkészülnek, ha a szerveré elbukott
+      - name: Klienstesztek lefedettséggel
+        if: ${{ !cancelled() }}
+        run: npm run coverage --prefix client
+
+      - name: Produkciós build
+        run: npm run build
+
+      # A HTML-jelentések letölthető melléklete (sikertelen futásnál is, ha elkészültek)
+      - name: Lefedettségi jelentések mellékletként
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: lefedettseg
+          path: |
+            server/coverage
+            client/coverage
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # L28: a teljes folyamat a böngészőből (Playwright, Chromium) külön feladatban, hogy a gyors
+  # ellenőrzésektől függetlenül fusson és bukjon. A környezetet a tesztfuttató maga építi fel
+  # (lokális Hardhat-lánc, a lefordított szerver a tesztadatbázison, vite preview); a Stripe
+  # Checkout munkamenete valódi tesztkulcs nélkül nem hozható létre, ezért a vásárlás
+  # forgatókönyve itt kimarad (a többi fut). A HTML-riport (a bukott tesztek trace-eivel) és a
+  # folyamatok naplói mellékletként tölthetők le.
+  e2e:
+    name: End-to-end tesztek (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: photochain
+          POSTGRES_PASSWORD: photochain
+          POSTGRES_DB: photochain_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U photochain -d photochain_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Forrás letöltése
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Node.js 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            blockchain/package-lock.json
+            server/package-lock.json
+            client/package-lock.json
+            e2e/package-lock.json
+
+      - name: Függőségek telepítése
+        run: |
+          npm ci --prefix blockchain
+          npm ci --prefix server
+          npm ci --prefix client
+          npm ci --prefix e2e
+
+      # A Playwright saját Chromiumja a futtató rendszerkönyvtáraival
+      - name: Chromium telepítése
+        run: npx playwright install --with-deps chromium
+        working-directory: e2e
+
+      - name: End-to-end tesztek
+        env:
+          # A tesztfuttató ebből indítja a szervert; a név „_test” végű, mert a futás kiüríti
+          TEST_DATABASE_URL: postgresql://photochain:photochain@localhost:5432/photochain_test
+        run: npm test
+        working-directory: e2e
+
+      # A riport (bukásnál a trace-ekkel) és a folyamatok naplói (sikertelen futásnál is)
+      - name: Playwright-riport mellékletként
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-riport
+          path: |
+            e2e/playwright-report
+            e2e/logs
+          if-no-files-found: ignore
+          retention-days: 14

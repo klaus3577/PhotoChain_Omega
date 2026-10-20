@@ -1,0 +1,54 @@
+# REST Client (VS Code) kérések – a nyilvános hitelesség-ellenőrző (L12). Bejelentkezés nem kell.
+# A szerver: npm run dev (server/ mappában). A VERIFIED válaszhoz előbb töltsd fel a tócsás képet
+# (photos.http 2. kérése), és várd meg a lánc-regisztrációt (a kép REGISTERED állapotú lesz). A képek
+# a saját tesztfotók (tests/fixtures/images/); az ellenőrzött fájl sehol nem tárolódik.
+
+@host = http://localhost:4000
+@baseUrl = {{host}}/api
+# A tócsás tesztfotó SHA-256 hash-e (a feltöltés vagy az 1. kérés válaszának sha256 mezője)
+@sha256 = c9c688809d69960a27a69d25b41a8b9782aa476afcee6c95e3807186c5177629
+
+### 1. Fájl ellenőrzése – várt válasz: 200; a regisztrált képre "result": "VERIFIED" (a regisztráció
+### idejével, blokkjával, tranzakciójával és a fotós adataival); egy módosított másolatára
+### "SIMILAR" (a távolsággal), ismeretlen képre "NOT_FOUND"
+POST {{baseUrl}}/verify
+Content-Type: multipart/form-data; boundary=PhotoChainHatar
+
+--PhotoChainHatar
+Content-Disposition: form-data; name="image"; filename="01_tocsa_tukrozodes.jpg"
+Content-Type: image/jpeg
+
+< ../tests/fixtures/images/01_tocsa_tukrozodes.jpg
+--PhotoChainHatar--
+
+### 2. Egy fel nem töltött kép – várt válasz: 200, "result": "NOT_FOUND"
+POST {{baseUrl}}/verify
+Content-Type: multipart/form-data; boundary=PhotoChainHatar
+
+--PhotoChainHatar
+Content-Disposition: form-data; name="image"; filename="03_basszusgitar.jpg"
+Content-Type: image/jpeg
+
+< ../tests/fixtures/images/03_basszusgitar.jpg
+--PhotoChainHatar--
+
+### 3. Ellenőrzés a hash alapján – várt válasz: 200, VERIFIED vagy NOT_FOUND (hasonlóságot a hash
+### alapján nem keres, mert a dHash-hez a kép kellene)
+GET {{baseUrl}}/verify/{{sha256}}
+
+### 4. Az Etherscanről másolt alak (0x előtaggal, akár nagybetűvel) is elfogadott
+GET {{baseUrl}}/verify/0x{{sha256}}
+
+### 5. Hibás hash – várt válasz: 400, VALIDATION_ERROR (a láncot meg sem kérdezi)
+GET {{baseUrl}}/verify/nem-hash
+
+### 6. Nem kép, .jpg néven – várt válasz: 415, UNSUPPORTED_IMAGE
+POST {{baseUrl}}/verify
+Content-Type: multipart/form-data; boundary=PhotoChainHatar
+
+--PhotoChainHatar
+Content-Disposition: form-data; name="image"; filename="kep.jpg"
+Content-Type: image/jpeg
+
+Ez egy szövegfájl, amelyet valaki .jpg-re nevezett át.
+--PhotoChainHatar--

@@ -1,0 +1,54 @@
+# REST Client (VS Code) kérések – saját profil, saját képek és publikus fotósprofil (L13), sorban
+# fentről lefelé. A szerver: npm run dev (server/ mappában). Előtte az auth.http 1. kérésével
+# regisztráld a próbafiókot.
+
+@host = http://localhost:4000
+@baseUrl = {{host}}/api
+# Próbafiók a helyi fejlesztői adatbázisban – kitalált adatok, nem valódi jelszó
+@email = proba.peter@photochain.test
+@password = helyi-proba-jelszo
+
+### 1. Bejelentkezés – várt válasz: 200 + Set-Cookie (a REST Client a sütit megjegyzi)
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### 2. Saját profil módosítása – várt válasz: 200, a saját adatok (Cache-Control: no-store). Csak a
+### megjelenített név és a bemutatkozás módosítható; a bemutatkozás null-lal törölhető.
+PATCH {{baseUrl}}/me
+Content-Type: application/json
+
+{
+  "displayName": "Próba Péter",
+  "bio": "Tájképek és portrék.\nBudapest"
+}
+
+### 3. A szerepkör nem módosítható – várt válasz: 400, VALIDATION_ERROR („ismeretlen mező: role”)
+PATCH {{baseUrl}}/me
+Content-Type: application/json
+
+{
+  "role": "ADMIN"
+}
+
+### 4. Saját képek – várt válasz: 200, minden állapotban (a rejtettek is), a legújabb elöl, a meta
+### objektummal
+GET {{baseUrl}}/me/photos?page=1&pageSize=10
+
+### 5. Publikus fotósprofil – várt válasz: 200, név, bemutatkozás, regisztráció ideje és a nyilvános
+### képek száma (e-mail, szerepkör és tiltási állapot nélkül)
+GET {{baseUrl}}/users/{{login.response.body.data.user.id}}
+
+### 6. A fotós nyilvános képei (a profiloldalhoz) – várt válasz: 200, lista a meta objektummal
+GET {{baseUrl}}/photos?ownerId={{login.response.body.data.user.id}}
+
+### 7. Ismeretlen felhasználó – várt válasz: 404, NOT_FOUND
+GET {{baseUrl}}/users/3f2b8a52-6c1e-4f0a-9d4e-1b2c3d4e5f60
+
+### 8. Érvénytelen azonosító – várt válasz: 400, VALIDATION_ERROR
+GET {{baseUrl}}/users/nem-uuid

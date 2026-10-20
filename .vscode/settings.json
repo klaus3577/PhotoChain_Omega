@@ -1,0 +1,28 @@
+{
+  // Formázás mentéskor a Prettierrel (szabályok: .prettierrc, kivételek: .prettierignore)
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.requireConfig": true,
+
+  // Egységes sorvég és fájlvég (lásd még: .editorconfig, .gitattributes)
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "[markdown]": {
+    "files.trimTrailingWhitespace": false
+  },
+
+  // A Solidity-fájlokat a Hardhat bővítmény formázza
+  "[solidity]": {
+    "editor.defaultFormatter": "NomicFoundation.hardhat-solidity"
+  },
+
+  // Ha a „Solidity” (juanblanco.solidity) bővítmény van telepítve: alapból a legfrissebb solc-vel
+  // fordít, ami a rögzített `pragma solidity 0.8.34;` sorra verzióhibát jelez. Ezért ugyanazt a
+  // fordítót kapja, mint a Hardhat (blockchain/hardhat.config.ts) – verzióváltáskor együtt módosítandó.
+  "solidity.compileUsingRemoteVersion": "v0.8.34+commit.80d5c536",
+
+  // ESLint: a client és a server a saját mappájának konfigurációját használja (a blockchain és az e2e
+  // alprojektnek nincs ESLint-konfigurációja; ezeket a típusellenőrzés és a tesztek fedik le)
+  "eslint.workingDirectories": [{ "mode": "auto" }]
+}

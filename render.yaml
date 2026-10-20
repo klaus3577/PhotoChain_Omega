@@ -1,0 +1,65 @@
+# PhotoChain – Render Blueprint (L32): egy Docker-alapú webszolgáltatás az ingyenes csomagban,
+# Frankfurtban (a Render régiói közül ez van a legközelebb a Supabase-projekthez: eu-west-1, Írország).
+# A repó gyökerében lévő Dockerfile-ból épül; az állapotot a /api/health végponton ellenőrzi. Csak a
+# GitHub-ellenőrzések (CI) sikere után telepít újra.
+# A titkos értékeket (sync: false) a Render a Blueprint első létrehozásakor kéri be – a repóba nem
+# kerülnek; a JWT-kulcsot a Render maga állítja elő (véletlen, 256 bites).
+# Forrás: Render – Blueprint YAML Reference, https://render.com/docs/blueprint-spec; Render – Deploy
+# from a Dockerfile, https://render.com/docs/docker (adaptálva)
+services:
+  - type: web
+    name: photochain
+    runtime: docker
+    plan: free
+    region: frankfurt
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeployTrigger: checksPass
+    envVars:
+      # A Render alapértelmezett portja; a konténer HEALTHCHECK-je is ezt használja
+      - key: PORT
+        value: '10000'
+      - key: NODE_ENV
+        value: production
+      # A kliens és a szerver közötti proxyk száma, mérve (L32, 2026-10-13): a jelölt mérőkérésnél
+      # (/api/health?proxy_probe) az X-Forwarded-For fejlécben 3 bejegyzés volt (Cloudflare + a Render
+      # két rétege). 3 mellett a sebességkorlát kulcsa a látogató címe, a hamis fejléc nem érvényesül;
+      # 1 mellett egy proxy címe lett volna – minden látogató közös kereten osztozott volna.
+      - key: TRUST_PROXY_HOPS
+        value: '3'
+      - key: CHAIN_ID
+        value: '11155111'
+      - key: STORAGE_DRIVER
+        value: supabase
+      - key: DATABASE_SSL_CA_FILE
+        value: /app/server/certs/supabase-prod-ca-2021.crt
+      # Az ingyenes példány 512 MB-os és 0,1 CPU-s: egyszerre egy képbontás, 25 MP-es korlát (a
+      # build-argumentumként a kliens is megkapja)
+      - key: IMAGE_MAX_MEGAPIXELS
+        value: '25'
+      - key: IMAGE_PROCESSING_CONCURRENCY
+        value: '1'
+      - key: VERIFY_MAX_CONCURRENT
+        value: '1'
+      - key: UPLOAD_MAX_CONCURRENT
+        value: '2'
+      - key: JWT_SECRET
+        generateValue: true
+      - key: APP_BASE_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: RPC_URL
+        sync: false
+      - key: PLATFORM_PRIVATE_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false

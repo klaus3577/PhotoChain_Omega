@@ -1,0 +1,20 @@
+# Egységes sorvégek: a repóban és a munkakönyvtárban is LF, Windows alatt is.
+# (Felülírja a gépenkénti core.autocrlf beállítást.)
+* text=auto eol=lf
+
+# A Windows-parancsfájlok maradjanak CRLF sorvégűek
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Bináris fájlok: nincs sorvég-konverzió és szöveges diff
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.docx binary
+*.xlsx binary
+*.zip binary

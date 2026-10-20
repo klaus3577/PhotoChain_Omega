@@ -1,0 +1,10 @@
+# PhotoChain
+
+> Fotópiac (szakdolgozati prototípus), ahol a feltöltött képek ujjlenyomata (SHA-256 és dHash) az
+> Ethereum Sepolia teszthálózaton rögzül; ugyanaz a kép vagy egy módosított másolata nem tölthető fel
+> újra, és bárki ellenőrizheti, hogy egy kép regisztrálva van-e.
+
+## Nyilvános oldalak
+
+- [Galéria](/): a hitelesített képek, kereséssel és szűrőkkel
+- [Hitelesség-ellenőrzés](/verify): kép vagy SHA-256 hash alapján, bejelentkezés nélkül

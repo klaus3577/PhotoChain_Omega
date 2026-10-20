@@ -1,0 +1,57 @@
+# REST Client (VS Code) kérések – az auth-folyamat végigjátszása (L08), sorban fentről lefelé.
+# A szerver: npm run dev (server/ mappában). A REST Client a válaszban kapott sütit megjegyzi, és a
+# következő kérésekhez magától csatolja (beállítás: rest-client.rememberCookiesForSubsequentRequests).
+
+@baseUrl = http://localhost:4000/api
+# Próbafiók a helyi fejlesztői adatbázisban – kitalált adatok, nem valódi jelszó
+@email = proba.peter@photochain.test
+@password = helyi-proba-jelszo
+
+### 1. Regisztráció – várt válasz: 201, a felhasználó adatai (jelszó nélkül) + Set-Cookie fejléc
+### (photochain_session=…; HttpOnly; SameSite=Lax). Másodszorra: 409, EMAIL_TAKEN
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}",
+  "displayName": "Próba Péter"
+}
+
+### 2. Saját adatok – várt válasz: 200 (a regisztráció be is jelentkeztetett)
+GET {{baseUrl}}/auth/me
+
+### 3. Kijelentkezés – várt válasz: 204, a süti törlődik
+POST {{baseUrl}}/auth/logout
+
+### 4. Saját adatok kijelentkezve – várt válasz: 401, UNAUTHORIZED
+GET {{baseUrl}}/auth/me
+
+### 5. Bejelentkezés rossz jelszóval – várt válasz: 401, INVALID_CREDENTIALS
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "rossz-jelszo"
+}
+
+### 6. Bejelentkezés – várt válasz: 200 + Set-Cookie fejléc (az e-mail-cím kis- és nagybetűi nem
+### számítanak)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### 7. Érvénytelen regisztráció – várt válasz: 400, VALIDATION_ERROR, mezőnkénti részletekkel
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "nem-email",
+  "password": "rövid",
+  "displayName": ""
+}

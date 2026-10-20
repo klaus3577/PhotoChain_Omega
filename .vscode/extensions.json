@@ -1,0 +1,19 @@
+{
+  // A fejlesztési terv (docs/FEJLESZTESI_TERV.md) 2.4 pontjában felsorolt bővítmények.
+  // A VS Code a mappa megnyitásakor felajánlja a telepítésüket.
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "Prisma.prisma",
+    "bradlc.vscode-tailwindcss",
+    "NomicFoundation.hardhat-solidity",
+    "ms-azuretools.vscode-docker",
+    "humao.rest-client",
+    "vitest.explorer",
+    "ms-playwright.playwright",
+    "bierner.markdown-mermaid",
+    // opcionális
+    "eamodio.gitlens",
+    "usernamehw.errorlens"
+  ]
+}

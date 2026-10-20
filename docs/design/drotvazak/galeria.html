@@ -1,0 +1,474 @@
+<!doctype html>
+<!--
+  PhotoChain – drótváz: Galéria (L17). Lo-fi, szürkeárnyalatos vázlat: az elrendezést, a tartalmat és a
+  viselkedést mutatja; a végleges színek és komponensek a docs/design/stilusutmutato.html-ben vannak.
+  Önálló fájl (a betűk, a Tailwind és az ikonok CDN-ről), így külön megnyitható és lefényképezhető.
+  Reszponzív: ugyanaz a fájl mobilon (390 px) és asztali nézetben (1440 px).
+-->
+<html lang="hu">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Drótváz – Galéria · PhotoChain</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@fontsource-variable/inter@5.3.0/index.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@fontsource-variable/jetbrains-mono@5.3.0/index.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@1.53.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+      @theme {
+        --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+        --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+      }
+      /* Képhelyőrző: áthúzott téglalap (a drótvázak szokásos jele) */
+      @utility wf-img {
+        background:
+          linear-gradient(
+            to top right,
+            transparent calc(50% - 1px),
+            var(--color-neutral-300) 50%,
+            transparent calc(50% + 1px)
+          ),
+          linear-gradient(
+            to bottom right,
+            transparent calc(50% - 1px),
+            var(--color-neutral-300) 50%,
+            transparent calc(50% + 1px)
+          ),
+          var(--color-neutral-100);
+      }
+      /* Számozott jegyzetjel: a lap alján lévő azonos számú jegyzetre utal */
+      @utility wf-note {
+        display: inline-grid;
+        flex-shrink: 0;
+        place-items: center;
+        width: 1.375rem;
+        height: 1.375rem;
+        border-radius: 9999px;
+        background: var(--color-neutral-900);
+        color: var(--color-white);
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1;
+      }
+    </style>
+  </head>
+  <body class="bg-white font-sans text-neutral-900 antialiased">
+    <header class="border-b border-neutral-300">
+      <div class="mx-auto flex h-16 max-w-7xl items-center gap-8 px-4 sm:px-6 lg:px-8">
+        <a href="#" class="text-lg font-semibold tracking-tight">PhotoChain</a>
+        <nav aria-label="Fő navigáció" class="hidden h-full items-center gap-6 text-sm md:flex">
+          <a
+            href="#"
+            aria-current="page"
+            class="flex h-full items-center border-b-2 border-neutral-900 font-semibold"
+            >Galéria</a
+          >
+          <a href="#" class="text-neutral-600">Ellenőrzés</a>
+          <a href="#" class="text-neutral-600">Vezérlőpult</a>
+        </nav>
+        <div class="ml-auto flex items-center gap-2">
+          <a
+            href="#"
+            class="hidden h-9 items-center gap-2 rounded-md bg-neutral-900 px-3 text-sm font-medium text-white sm:inline-flex"
+            ><i data-lucide="upload" class="size-4"></i>Feltöltés</a
+          >
+          <button
+            type="button"
+            class="grid size-9 place-items-center rounded-full border border-neutral-400 text-xs font-medium"
+            aria-label="FN – fiókmenü"
+            aria-expanded="false"
+          >
+            FN
+          </button>
+          <button
+            type="button"
+            class="grid size-9 place-items-center rounded-md border border-neutral-300 md:hidden"
+            aria-label="Menü"
+            aria-expanded="false"
+          >
+            <i data-lucide="menu" class="size-5"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+      <h1 class="text-3xl font-semibold tracking-tight">Galéria</h1>
+      <p class="mt-1 text-sm text-neutral-600">
+        121 hitelesített kép – mindegyik ujjlenyomata a blokkláncon rögzítve.
+      </p>
+
+      <div class="mt-6 flex flex-col gap-3 lg:flex-row lg:items-end">
+        <div class="flex flex-1 items-center gap-2">
+          <b aria-hidden="true" class="wf-note">1</b>
+          <label class="relative block flex-1">
+            <span class="sr-only">Keresés cím vagy leírás alapján</span>
+            <i
+              data-lucide="search"
+              class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-500"
+            ></i>
+            <input
+              type="search"
+              class="h-10 w-full rounded-md border border-neutral-400 pr-3 pl-9 text-sm"
+              placeholder="Keresés cím vagy leírás alapján…"
+              value="erdő"
+            />
+          </label>
+          <button
+            type="button"
+            class="inline-flex h-10 items-center gap-2 rounded-md border border-neutral-400 px-3 text-sm lg:hidden"
+            aria-expanded="false"
+          >
+            <i data-lucide="sliders-horizontal" class="size-4"></i>Szűrők<span
+              class="rounded-full bg-neutral-900 px-1.5 text-xs text-white"
+              aria-hidden="true"
+              >2</span
+            ><span class="sr-only">, 2 aktív szűrő</span>
+          </button>
+        </div>
+        <div class="hidden items-end gap-3 lg:flex">
+          <b aria-hidden="true" class="wf-note mb-2.5">2</b>
+          <label class="text-sm font-medium"
+            >Kategória
+            <select
+              class="mt-1 block h-10 w-40 rounded-md border border-neutral-400 px-2 text-sm font-normal"
+            >
+              <option>Tájkép</option>
+            </select>
+          </label>
+          <fieldset class="text-sm">
+            <legend class="font-medium">Ár (Ft)</legend>
+            <div class="mt-1 flex items-center gap-2">
+              <input
+                aria-label="Legalacsonyabb ár"
+                class="h-10 w-24 rounded-md border border-neutral-400 px-2"
+                value="5 000"
+              />
+              <span aria-hidden="true">–</span>
+              <input
+                aria-label="Legmagasabb ár"
+                class="h-10 w-24 rounded-md border border-neutral-400 px-2"
+                value="20 000"
+              />
+            </div>
+          </fieldset>
+        </div>
+        <div class="flex items-end gap-2">
+          <b aria-hidden="true" class="wf-note mb-2.5">3</b>
+          <label class="flex-1 text-sm font-medium lg:flex-none"
+            >Rendezés
+            <select
+              class="mt-1 block h-10 w-full rounded-md border border-neutral-400 px-2 text-sm font-normal lg:w-48"
+            >
+              <option>Legújabb elöl</option>
+              <option>Legrégebbi elöl</option>
+              <option>Ár szerint növekvő</option>
+              <option>Ár szerint csökkenő</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="mt-3 flex flex-wrap items-center gap-2 text-sm">
+        <button
+          type="button"
+          aria-label="Tájkép – szűrő törlése"
+          class="inline-flex min-h-7 items-center gap-1 rounded-full border border-neutral-400 px-2.5 py-0.5"
+        >
+          Tájkép<i data-lucide="x" class="size-3.5"></i>
+        </button>
+        <button
+          type="button"
+          aria-label="5 000 – 20 000 Ft – szűrő törlése"
+          class="inline-flex min-h-7 items-center gap-1 rounded-full border border-neutral-400 px-2.5 py-0.5"
+        >
+          5 000 – 20 000 Ft<i data-lucide="x" class="size-3.5"></i>
+        </button>
+        <a href="#" class="ml-1 text-neutral-600 underline underline-offset-2">Szűrők törlése</a>
+        <span class="ml-auto text-neutral-600">31 találat</span>
+      </div>
+
+      <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <article class="relative overflow-hidden rounded-lg border border-neutral-300">
+          <b aria-hidden="true" class="wf-note absolute top-2 left-2">4</b>
+          <div class="wf-img aspect-[4/3]"></div>
+          <div class="p-3">
+            <h2 class="truncate font-medium">
+              <a href="#" class="after:absolute after:inset-0">Őszi erdő ködben</a>
+            </h2>
+            <p class="text-sm text-neutral-600">Fotós neve</p>
+            <div class="mt-2 flex items-center justify-between">
+              <span class="text-lg font-semibold tabular-nums">12 500 Ft</span>
+              <span class="inline-flex items-center gap-1 text-sm"
+                ><i data-lucide="star" class="size-4 fill-current"></i
+                ><span class="sr-only">Értékelés:</span>4,6
+                <span class="text-neutral-500"
+                  >(12<span class="sr-only"> értékelés</span>)</span
+                ></span
+              >
+            </div>
+            <p class="mt-2 inline-flex items-center gap-1 text-xs font-medium text-neutral-700">
+              <i data-lucide="shield-check" class="size-4"></i>Hitelesítve
+            </p>
+          </div>
+        </article>
+        <article class="relative overflow-hidden rounded-lg border border-neutral-300">
+          <div class="wf-img aspect-[4/3]"></div>
+          <div class="p-3">
+            <h2 class="truncate font-medium">
+              <a href="#" class="after:absolute after:inset-0">Erdei ösvény hajnalban</a>
+            </h2>
+            <p class="text-sm text-neutral-600">Fotós neve</p>
+            <div class="mt-2 flex items-center justify-between">
+              <span class="text-lg font-semibold tabular-nums">8 900 Ft</span>
+              <span class="inline-flex items-center gap-1 text-sm"
+                ><i data-lucide="star" class="size-4 fill-current"></i
+                ><span class="sr-only">Értékelés:</span>4,9
+                <span class="text-neutral-500"
+                  >(31<span class="sr-only"> értékelés</span>)</span
+                ></span
+              >
+            </div>
+            <p class="mt-2 inline-flex items-center gap-1 text-xs font-medium text-neutral-700">
+              <i data-lucide="shield-check" class="size-4"></i>Hitelesítve
+            </p>
+          </div>
+        </article>
+        <article class="relative overflow-hidden rounded-lg border border-neutral-300">
+          <b aria-hidden="true" class="wf-note absolute top-2 left-2">5</b>
+          <div class="grid aspect-[4/3] place-items-center bg-neutral-50 text-neutral-500">
+            <span class="flex flex-col items-center gap-1 text-sm"
+              ><i data-lucide="image-off" class="size-6"></i>Előnézet nem érhető el</span
+            >
+          </div>
+          <div class="p-3">
+            <h2 class="truncate font-medium">
+              <a href="#" class="after:absolute after:inset-0">Bükkös az erdő szélén</a>
+            </h2>
+            <p class="text-sm text-neutral-600">Fotós neve</p>
+            <div class="mt-2 flex items-center justify-between">
+              <span class="text-lg font-semibold tabular-nums">6 500 Ft</span>
+              <span class="text-sm text-neutral-500">nincs értékelés</span>
+            </div>
+            <p class="mt-2 inline-flex items-center gap-1 text-xs font-medium text-neutral-700">
+              <i data-lucide="shield-check" class="size-4"></i>Hitelesítve
+            </p>
+          </div>
+        </article>
+        <article class="relative overflow-hidden rounded-lg border border-neutral-300">
+          <div class="wf-img aspect-[4/3]"></div>
+          <div class="p-3">
+            <h2 class="truncate font-medium">
+              <a href="#" class="after:absolute after:inset-0">Tisztás a fenyvesben</a>
+            </h2>
+            <p class="text-sm text-neutral-600">Fotós neve</p>
+            <div class="mt-2 flex items-center justify-between">
+              <span class="text-lg font-semibold tabular-nums">15 000 Ft</span>
+              <span class="inline-flex items-center gap-1 text-sm"
+                ><i data-lucide="star" class="size-4 fill-current"></i
+                ><span class="sr-only">Értékelés:</span>4,2
+                <span class="text-neutral-500"
+                  >(5<span class="sr-only"> értékelés</span>)</span
+                ></span
+              >
+            </div>
+            <p class="mt-2 inline-flex items-center gap-1 text-xs font-medium text-neutral-700">
+              <i data-lucide="shield-check" class="size-4"></i>Hitelesítve
+            </p>
+          </div>
+        </article>
+        <article class="relative overflow-hidden rounded-lg border border-neutral-300">
+          <div class="wf-img aspect-[4/3]"></div>
+          <div class="p-3">
+            <h2 class="truncate font-medium">
+              <a href="#" class="after:absolute after:inset-0">Ködös völgy a kilátóból</a>
+            </h2>
+            <p class="text-sm text-neutral-600">Fotós neve</p>
+            <div class="mt-2 flex items-center justify-between">
+              <span class="text-lg font-semibold tabular-nums">19 900 Ft</span>
+              <span class="inline-flex items-center gap-1 text-sm"
+                ><i data-lucide="star" class="size-4 fill-current"></i
+                ><span class="sr-only">Értékelés:</span>5,0
+                <span class="text-neutral-500"
+                  >(3<span class="sr-only"> értékelés</span>)</span
+                ></span
+              >
+            </div>
+            <p class="mt-2 inline-flex items-center gap-1 text-xs font-medium text-neutral-700">
+              <i data-lucide="shield-check" class="size-4"></i>Hitelesítve
+            </p>
+          </div>
+        </article>
+        <article class="relative overflow-hidden rounded-lg border border-neutral-300">
+          <div class="wf-img aspect-[4/3]"></div>
+          <div class="p-3">
+            <h2 class="truncate font-medium">
+              <a href="#" class="after:absolute after:inset-0">Erdei patak mohás kövekkel</a>
+            </h2>
+            <p class="text-sm text-neutral-600">Fotós neve</p>
+            <div class="mt-2 flex items-center justify-between">
+              <span class="text-lg font-semibold tabular-nums">9 500 Ft</span>
+              <span class="inline-flex items-center gap-1 text-sm"
+                ><i data-lucide="star" class="size-4 fill-current"></i
+                ><span class="sr-only">Értékelés:</span>4,4
+                <span class="text-neutral-500"
+                  >(9<span class="sr-only"> értékelés</span>)</span
+                ></span
+              >
+            </div>
+            <p class="mt-2 inline-flex items-center gap-1 text-xs font-medium text-neutral-700">
+              <i data-lucide="shield-check" class="size-4"></i>Hitelesítve
+            </p>
+          </div>
+        </article>
+        <article class="relative overflow-hidden rounded-lg border border-neutral-300">
+          <div class="wf-img aspect-[4/3]"></div>
+          <div class="p-3">
+            <h2 class="truncate font-medium">
+              <a href="#" class="after:absolute after:inset-0">Őszi lombkorona alulról</a>
+            </h2>
+            <p class="text-sm text-neutral-600">Fotós neve</p>
+            <div class="mt-2 flex items-center justify-between">
+              <span class="text-lg font-semibold tabular-nums">7 000 Ft</span>
+              <span class="text-sm text-neutral-500">nincs értékelés</span>
+            </div>
+            <p class="mt-2 inline-flex items-center gap-1 text-xs font-medium text-neutral-700">
+              <i data-lucide="shield-check" class="size-4"></i>Hitelesítve
+            </p>
+          </div>
+        </article>
+        <article class="relative overflow-hidden rounded-lg border border-neutral-300">
+          <div class="wf-img aspect-[4/3]"></div>
+          <div class="p-3">
+            <h2 class="truncate font-medium">
+              <a href="#" class="after:absolute after:inset-0">Fenyőtobozok a havon</a>
+            </h2>
+            <p class="text-sm text-neutral-600">Fotós neve</p>
+            <div class="mt-2 flex items-center justify-between">
+              <span class="text-lg font-semibold tabular-nums">11 000 Ft</span>
+              <span class="inline-flex items-center gap-1 text-sm"
+                ><i data-lucide="star" class="size-4 fill-current"></i
+                ><span class="sr-only">Értékelés:</span>4,7
+                <span class="text-neutral-500"
+                  >(6<span class="sr-only"> értékelés</span>)</span
+                ></span
+              >
+            </div>
+            <p class="mt-2 inline-flex items-center gap-1 text-xs font-medium text-neutral-700">
+              <i data-lucide="shield-check" class="size-4"></i>Hitelesítve
+            </p>
+          </div>
+        </article>
+      </div>
+
+      <nav
+        aria-label="Lapozás"
+        class="mt-10 flex items-center justify-between gap-2 border-t border-neutral-300 pt-6 text-sm"
+      >
+        <a
+          href="#"
+          class="inline-flex h-9 items-center gap-1 rounded-md border border-neutral-300 px-3"
+          ><i data-lucide="chevron-left" class="size-4"></i>Előző</a
+        >
+        <div class="flex items-center gap-1">
+          <b aria-hidden="true" class="wf-note mr-2">6</b>
+          <span class="sm:hidden">2. oldal / 2</span>
+          <a href="#" class="hidden size-9 place-items-center rounded-md sm:grid">1</a>
+          <a
+            href="#"
+            aria-current="page"
+            class="hidden size-9 place-items-center rounded-md bg-neutral-900 font-medium text-white sm:grid"
+            >2</a
+          >
+        </div>
+        <a
+          role="link"
+          aria-disabled="true"
+          class="inline-flex h-9 items-center gap-1 rounded-md border border-neutral-300 px-3 text-neutral-500"
+          >Következő<i data-lucide="chevron-right" class="size-4"></i
+        ></a>
+      </nav>
+    </main>
+
+    <aside class="border-t-2 border-dashed border-neutral-300 bg-neutral-50">
+      <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <p class="text-xs font-semibold tracking-wider text-neutral-500 uppercase">Drótváz · L17</p>
+        <h2 class="mt-1 text-lg font-semibold">Galéria – jegyzetek</h2>
+        <p class="mt-1 max-w-3xl text-sm text-neutral-600">
+          Lo-fi vázlat: a szürke árnyalatok helyén a végleges felületen a stílusútmutató színei
+          állnak (a sötét gomb piros, a pajzs zöld). A szögletes zárójel Nielsen heurisztikáira
+          utal: [H1] a rendszer állapotának láthatósága … [H10] súgó és dokumentáció.
+        </p>
+        <ol class="mt-5 grid gap-x-10 gap-y-3 text-sm leading-6 md:grid-cols-2">
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">1</b>
+            <p>
+              <strong>Keresés</strong> a címben és a leírásban (q). Gépelés után rövid
+              késleltetéssel frissül; a keresőszó és a szűrők az URL-ben maradnak, így a nézet
+              megosztható, és a vissza gomb is működik. A frissült találatszámot az oldal közös élő
+              régiója (role="status") mondja be.
+              <span class="text-neutral-500">[H3, H7]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">2</b>
+            <p>
+              <strong>Szűrők:</strong> kategória és ár-tartomány (minPrice, maxPrice). Asztalon az
+              eszköztárban, mobilon a „Szűrők” gomb alsó panelt nyit; a gombon az aktív szűrők
+              száma. Az aktív szűrők címkéi egyenként törölhetők.
+              <span class="text-neutral-500">[H1, H3]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">3</b>
+            <p>
+              <strong>Rendezés:</strong> legújabb (alapértelmezés), legrégebbi, ár szerint növekvő
+              és csökkenő – a szerver négy rendezésének megfelelően.
+              <span class="text-neutral-500">[H2]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">4</b>
+            <p>
+              <strong>Fotókártya:</strong> vízjeles bélyegkép, cím, fotós, ár, átlagos értékelés és
+              a „Hitelesítve” pajzs. A galériában csak hitelesített kép szerepel, a pajzs ezt teszi
+              láthatóvá. A cím a hivatkozás (címsor), a kattintható felület a teljes kártya; a
+              bélyegkép alt="" (a cím leírja), az adatlap nagy képe „&lt;cím&gt; – vízjeles
+              előnézet”. Az átlag és a darabszám a listaválaszban még nincs: API-bővítés kell
+              (README).
+              <span class="text-neutral-500">[H1, H4]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">5</b>
+            <p>
+              <strong>Hiányzó előnézet:</strong> ha a bélyegkép nem tölthető be, semleges
+              helykitöltő jelenik meg – a rács nem esik szét.
+              <span class="text-neutral-500">[H9]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">6</b>
+            <p>
+              <strong>Lapozás</strong> oldalanként 24 képpel (pageSize=24: a 2, 3 és 4 oszlopos rács
+              is teli sorokkal zárul); mobilon csak „n. oldal / összes”; az elérhetetlen irány href
+              nélküli, aria-disabled hivatkozás. Ha nincs találat: „Nincs találat” üzenet és „Szűrők
+              törlése” gomb (stílusútmutató: üres állapot).
+              <span class="text-neutral-500">[H3, H8]</span>
+            </p>
+          </li>
+        </ol>
+      </div>
+    </aside>
+
+    <script>
+      lucide.createIcons();
+    </script>
+  </body>
+</html>

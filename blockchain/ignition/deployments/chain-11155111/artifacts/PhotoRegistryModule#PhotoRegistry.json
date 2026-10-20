@@ -1,0 +1,223 @@
+{
+  "_format": "hh3-artifact-1",
+  "contractName": "PhotoRegistry",
+  "sourceName": "contracts/PhotoRegistry.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "contentHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "AlreadyRegistered",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableInvalidOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableUnauthorizedAccount",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ZeroContentHash",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ZeroOwnerRef",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "contentHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "ownerRef",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes8",
+          "name": "perceptualHash",
+          "type": "bytes8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "registeredAt",
+          "type": "uint64"
+        }
+      ],
+      "name": "PhotoRegistered",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "contentHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getRecord",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "ownerRef",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes8",
+              "name": "perceptualHash",
+              "type": "bytes8"
+            },
+            {
+              "internalType": "uint64",
+              "name": "registeredAt",
+              "type": "uint64"
+            }
+          ],
+          "internalType": "struct PhotoRegistry.PhotoRecord",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "contentHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "isRegistered",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "contentHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes8",
+          "name": "perceptualHash",
+          "type": "bytes8"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "ownerRef",
+          "type": "bytes32"
+        }
+      ],
+      "name": "registerPhoto",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x6080604052348015600e575f5ffd5b503380603357604051631e4fbdf760e01b81525f600482015260240160405180910390fd5b603a81603f565b50608e565b5f80546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b6104758061009b5f395ff3fe608060405234801561000f575f5ffd5b5060043610610060575f3560e01c8063213681cd1461006457806327258b221461011357806358c144be14610159578063715018a61461016e5780638da5cb5b14610176578063f2fde38b14610190575b5f5ffd5b6100d86100723660046103ba565b60408051606080820183525f808352602080840182905292840181905293845260018083529383902083519182018452805482529093015460c081901b6001600160c01b03191691840191909152600160401b900467ffffffffffffffff169082015290565b60408051825181526020808401516001600160c01b031916908201529181015167ffffffffffffffff16908201526060015b60405180910390f35b6101496101213660046103ba565b5f9081526001602081905260409091200154600160401b900467ffffffffffffffff16151590565b604051901515815260200161010a565b61016c6101673660046103d1565b6101a3565b005b61016c6102ef565b5f546040516001600160a01b03909116815260200161010a565b61016c61019e366004610412565b610302565b6101ab61033f565b826101c957604051636abf878960e11b815260040160405180910390fd5b806101e75760405163074afc6b60e01b815260040160405180910390fd5b5f8381526001602081905260409091200154600160401b900467ffffffffffffffff161561023057604051633be57b3960e11b8152600481018490526024015b60405180910390fd5b604080516060810182528281526001600160c01b03198416602080830182815267ffffffffffffffff428181168688018181525f8c81526001808852908a90209851895594519790940180549451909316600160401b026fffffffffffffffffffffffffffffffff1990941660c09790971c969096179290921790558451928352908201929092529091839186917f6541d744d756c76c192ebae74bdec7a09e51dade1a98ecfb7180d5a0191e8a60910160405180910390a350505050565b6102f761033f565b6103005f61036b565b565b61030a61033f565b6001600160a01b03811661033357604051631e4fbdf760e01b81525f6004820152602401610227565b61033c8161036b565b50565b5f546001600160a01b031633146103005760405163118cdaa760e01b8152336004820152602401610227565b5f80546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b5f602082840312156103ca575f5ffd5b5035919050565b5f5f5f606084860312156103e3575f5ffd5b8335925060208401356001600160c01b031981168114610401575f5ffd5b929592945050506040919091013590565b5f60208284031215610422575f5ffd5b81356001600160a01b0381168114610438575f5ffd5b939250505056fea2646970667358221220a06355ac397528f661383c3e9896b4a6af3707f4007786e7ab7dd23ab232fb3864736f6c63430008220033",
+  "deployedBytecode": "0x608060405234801561000f575f5ffd5b5060043610610060575f3560e01c8063213681cd1461006457806327258b221461011357806358c144be14610159578063715018a61461016e5780638da5cb5b14610176578063f2fde38b14610190575b5f5ffd5b6100d86100723660046103ba565b60408051606080820183525f808352602080840182905292840181905293845260018083529383902083519182018452805482529093015460c081901b6001600160c01b03191691840191909152600160401b900467ffffffffffffffff169082015290565b60408051825181526020808401516001600160c01b031916908201529181015167ffffffffffffffff16908201526060015b60405180910390f35b6101496101213660046103ba565b5f9081526001602081905260409091200154600160401b900467ffffffffffffffff16151590565b604051901515815260200161010a565b61016c6101673660046103d1565b6101a3565b005b61016c6102ef565b5f546040516001600160a01b03909116815260200161010a565b61016c61019e366004610412565b610302565b6101ab61033f565b826101c957604051636abf878960e11b815260040160405180910390fd5b806101e75760405163074afc6b60e01b815260040160405180910390fd5b5f8381526001602081905260409091200154600160401b900467ffffffffffffffff161561023057604051633be57b3960e11b8152600481018490526024015b60405180910390fd5b604080516060810182528281526001600160c01b03198416602080830182815267ffffffffffffffff428181168688018181525f8c81526001808852908a90209851895594519790940180549451909316600160401b026fffffffffffffffffffffffffffffffff1990941660c09790971c969096179290921790558451928352908201929092529091839186917f6541d744d756c76c192ebae74bdec7a09e51dade1a98ecfb7180d5a0191e8a60910160405180910390a350505050565b6102f761033f565b6103005f61036b565b565b61030a61033f565b6001600160a01b03811661033357604051631e4fbdf760e01b81525f6004820152602401610227565b61033c8161036b565b50565b5f546001600160a01b031633146103005760405163118cdaa760e01b8152336004820152602401610227565b5f80546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b5f602082840312156103ca575f5ffd5b5035919050565b5f5f5f606084860312156103e3575f5ffd5b8335925060208401356001600160c01b031981168114610401575f5ffd5b929592945050506040919091013590565b5f60208284031215610422575f5ffd5b81356001600160a01b0381168114610438575f5ffd5b939250505056fea2646970667358221220a06355ac397528f661383c3e9896b4a6af3707f4007786e7ab7dd23ab232fb3864736f6c63430008220033",
+  "linkReferences": {},
+  "deployedLinkReferences": {},
+  "immutableReferences": {},
+  "inputSourceName": "project/contracts/PhotoRegistry.sol",
+  "buildInfoId": "solc-0_8_34-152cc3223d93479b7737b6751928b65c58d43f4d"
+}

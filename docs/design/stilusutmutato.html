@@ -1,0 +1,945 @@
+<!doctype html>
+<!-- GENERÁLT FÁJL – ne szerkeszd kézzel. Forrás: client/src/styles/theme.css; újragenerálás: npm run design:styleguide -->
+<html lang="hu">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>PhotoChain – stílusútmutató</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/inter@5.3.0/index.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/jetbrains-mono@5.3.0/index.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@1.53.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+/*
+ * PhotoChain – design tokenek (L17): a Tailwind CSS v4 témája. Ez a tokenek egyetlen forrása: a
+ * kliens a Tailwind után importálja (src/styles/index.css, L18), a stílusútmutatót
+ * (docs/design/stilusutmutato.html) a tools/design/styleguide.mjs ebből generálja, a színpárosok
+ * kontrasztját a tools/design/contrast.mjs ellenőrzi (WCAG 2.2 AA). Az L18-ban költözött ide a
+ * docs/design/ alól, hogy a kliens buildje önállóan, a dokumentáció nélkül is működjön.
+ *
+ * Arculat (szerzői döntés, 2026-10-08): fekete-fehér, minimalista felület egyetlen piros
+ * kiemelőszínnel; világos téma (a sötét mód később adható hozzá). A zöld és a borostyán nem díszítő
+ * szín, hanem állapotjelző: zöld = a blokkláncon hitelesített (csak erre használjuk), borostyán =
+ * folyamatban vagy figyelmet kér.
+ * A piros egyszerre kiemelő- és hibaszín – ezért a hiba mindig ikonnal és szöveggel jelenik meg, nem
+ * csak színnel (WCAG 1.4.1).
+ *
+ * A komponensek a szerepalapú (szemantikus) neveket használják (pl. bg-canvas, text-fg,
+ * bg-primary), nem a skálák fokozatait – így egy későbbi sötét téma csak ezeket írja felül.
+ *
+ * Forrás: Tailwind CSS v4 – Theme variables (@theme, a névterek és az alapértékek törlése),
+ * https://tailwindcss.com/docs/theme; W3C – WCAG 2.2 (1.4.1, 1.4.3, 1.4.11),
+ * https://www.w3.org/TR/WCAG22/ (adaptálva)
+ */
+@theme {
+  /* Csak a saját palettánk: a Tailwind alapszínei nem használhatók (egységes arculat) */
+  --color-*: initial;
+
+  /* Betűk: Inter a szövegnek, JetBrains Mono a hash-eknek és a tranzakció-azonosítóknak. A kliens
+     saját hosztolással tölti be őket (@fontsource), nem a Google CDN-ről (adatvédelem). */
+  --font-sans: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Alap: fehér, fekete és a semleges szürkeskála */
+  --color-white: #ffffff;
+  --color-black: #0a0a0a;
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e5e5e5;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-400: #a3a3a3;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #525252;
+  --color-neutral-700: #404040;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
+  --color-neutral-950: #0a0a0a;
+
+  /* Kiemelőszín: piros (elsődleges művelet, aktív elem, hiba) */
+  --color-accent-50: #fff1f2;
+  --color-accent-100: #ffe1e3;
+  --color-accent-200: #ffc7cc;
+  --color-accent-600: #d7192d;
+  --color-accent-700: #b4111f;
+
+  /* Állapot: hitelesítve a blokkláncon (zöld). Az ikon a szöveg színét örökli (trust-700) – a
+     világosabb fokozat ikonként is csak 3:1 körüli lenne, szövegként pedig kevés */
+  --color-trust-50: #f0fdf4;
+  --color-trust-200: #bbf7d0;
+  --color-trust-700: #15803d;
+
+  /* Állapot: figyelem – folyamatban vagy ellenőrzést kér, pl. a lánc-regisztrációra vár, illetve
+     hasonló regisztrált képet találtunk (borostyán) */
+  --color-caution-50: #fffbeb;
+  --color-caution-200: #fde68a;
+  --color-caution-700: #b45309;
+
+  /* Szerepalapú nevek – a komponensek ezeket használják */
+  --color-canvas: var(--color-white);
+  --color-surface: var(--color-neutral-50);
+  --color-fg: var(--color-neutral-950);
+  --color-fg-muted: var(--color-neutral-600);
+  --color-line: var(--color-neutral-200);
+  --color-line-strong: var(--color-neutral-500);
+  --color-primary: var(--color-accent-600);
+  --color-primary-hover: var(--color-accent-700);
+  --color-on-primary: var(--color-white);
+  --color-danger: var(--color-accent-700);
+  --color-danger-surface: var(--color-accent-50);
+  --color-focus: var(--color-neutral-950);
+
+  /* Sarkok és árnyék: visszafogott, minimalista */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --shadow-card: 0 1px 2px 0 rgb(10 10 10 / 0.06), 0 1px 3px 0 rgb(10 10 10 / 0.08);
+}
+
+/* A helykitöltő szöveg a Tailwind alapján a szövegszín 50%-a (kb. 3,7:1) – nálunk a másodlagos
+   szöveg színe, így eléri a 4,5:1-et (WCAG 1.4.3) */
+@layer base {
+  ::placeholder {
+    color: var(--color-fg-muted);
+    opacity: 1;
+  }
+}
+
+</style>
+  </head>
+  <body class="bg-canvas font-sans text-fg antialiased">
+    <header class="border-b border-line">
+      <div class="mx-auto flex max-w-7xl flex-wrap items-end justify-between gap-4 px-4 py-6 sm:px-6 lg:px-8">
+        <div>
+          <p class="text-lg font-semibold tracking-tight">Photo<span class="text-primary">Chain</span></p>
+          <h1 class="mt-1 text-3xl font-semibold tracking-tight">Stílusútmutató</h1>
+        </div>
+        <p class="text-sm text-fg-muted">L17 · design tokenek: <code class="font-mono">client/src/styles/theme.css</code></p>
+      </div>
+      <nav aria-label="Tartalom" class="border-t border-line bg-surface">
+        <div class="mx-auto flex max-w-7xl flex-wrap gap-x-6 gap-y-2 px-4 py-3 text-sm sm:px-6 lg:px-8">
+        <a href="#szinek" class="rounded-sm text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">Színek</a>
+        <a href="#kontraszt" class="rounded-sm text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">Kontraszt</a>
+        <a href="#tipografia" class="rounded-sm text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">Tipográfia</a>
+        <a href="#formak" class="rounded-sm text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">Formák</a>
+        <a href="#bizalom" class="rounded-sm text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">Bizalom</a>
+        <a href="#komponensek" class="rounded-sm text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">Komponensek</a>
+        </div>
+      </nav>
+    </header>
+    <main class="mx-auto max-w-7xl space-y-14 px-4 py-10 sm:px-6 lg:px-8">
+
+<section id="szinek" class="scroll-mt-6 border-t border-line pt-10">
+  <h2 class="text-2xl font-semibold tracking-tight">Színek</h2>
+  <p class="mt-2 max-w-3xl leading-7 text-fg-muted">Fekete-fehér, minimalista paletta egyetlen piros kiemelőszínnel: piros az elsődleges művelet, az aktív elem és a hiba. A zöld és a borostyán nem díszítés, hanem állapot – a zöld kizárólag a blokkláncon igazolt hitelességet jelzi. A komponensek a szerepalapú neveket használják (pl. <code class="font-mono text-sm">bg-canvas</code>, <code class="font-mono text-sm">text-fg</code>, <code class="font-mono text-sm">bg-primary</code>).</p>
+  <div class="mt-6"><div class="space-y-8">
+    <div>
+      <h3 class="text-sm font-semibold text-fg-muted">Alap</h3>
+      <div class="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
+        <figure data-token="white">
+          <div class="h-14 rounded-md border border-line" style="background-color: #ffffff"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">white</span>
+            <span class="block font-mono text-xs text-fg-muted">#ffffff</span>
+          </figcaption>
+        </figure>
+        <figure data-token="black">
+          <div class="h-14 rounded-md border border-line" style="background-color: #0a0a0a"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">black</span>
+            <span class="block font-mono text-xs text-fg-muted">#0a0a0a</span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+    <div>
+      <h3 class="text-sm font-semibold text-fg-muted">Semleges szürkeskála</h3>
+      <div class="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
+        <figure data-token="neutral-50">
+          <div class="h-14 rounded-md border border-line" style="background-color: #fafafa"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">neutral-50</span>
+            <span class="block font-mono text-xs text-fg-muted">#fafafa</span>
+          </figcaption>
+        </figure>
+        <figure data-token="neutral-100">
+          <div class="h-14 rounded-md border border-line" style="background-color: #f5f5f5"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">neutral-100</span>
+            <span class="block font-mono text-xs text-fg-muted">#f5f5f5</span>
+          </figcaption>
+        </figure>
+        <figure data-token="neutral-200">
+          <div class="h-14 rounded-md border border-line" style="background-color: #e5e5e5"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">neutral-200</span>
+            <span class="block font-mono text-xs text-fg-muted">#e5e5e5</span>
+          </figcaption>
+        </figure>
+        <figure data-token="neutral-300">
+          <div class="h-14 rounded-md border border-line" style="background-color: #d4d4d4"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">neutral-300</span>
+            <span class="block font-mono text-xs text-fg-muted">#d4d4d4</span>
+          </figcaption>
+        </figure>
+        <figure data-token="neutral-400">
+          <div class="h-14 rounded-md border border-line" style="background-color: #a3a3a3"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">neutral-400</span>
+            <span class="block font-mono text-xs text-fg-muted">#a3a3a3</span>
+          </figcaption>
+        </figure>
+        <figure data-token="neutral-500">
+          <div class="h-14 rounded-md border border-line" style="background-color: #737373"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">neutral-500</span>
+            <span class="block font-mono text-xs text-fg-muted">#737373</span>
+          </figcaption>
+        </figure>
+        <figure data-token="neutral-600">
+          <div class="h-14 rounded-md border border-line" style="background-color: #525252"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">neutral-600</span>
+            <span class="block font-mono text-xs text-fg-muted">#525252</span>
+          </figcaption>
+        </figure>
+        <figure data-token="neutral-700">
+          <div class="h-14 rounded-md border border-line" style="background-color: #404040"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">neutral-700</span>
+            <span class="block font-mono text-xs text-fg-muted">#404040</span>
+          </figcaption>
+        </figure>
+        <figure data-token="neutral-800">
+          <div class="h-14 rounded-md border border-line" style="background-color: #262626"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">neutral-800</span>
+            <span class="block font-mono text-xs text-fg-muted">#262626</span>
+          </figcaption>
+        </figure>
+        <figure data-token="neutral-900">
+          <div class="h-14 rounded-md border border-line" style="background-color: #171717"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">neutral-900</span>
+            <span class="block font-mono text-xs text-fg-muted">#171717</span>
+          </figcaption>
+        </figure>
+        <figure data-token="neutral-950">
+          <div class="h-14 rounded-md border border-line" style="background-color: #0a0a0a"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">neutral-950</span>
+            <span class="block font-mono text-xs text-fg-muted">#0a0a0a</span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+    <div>
+      <h3 class="text-sm font-semibold text-fg-muted">Kiemelőszín – piros</h3>
+      <div class="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
+        <figure data-token="accent-50">
+          <div class="h-14 rounded-md border border-line" style="background-color: #fff1f2"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">accent-50</span>
+            <span class="block font-mono text-xs text-fg-muted">#fff1f2</span>
+          </figcaption>
+        </figure>
+        <figure data-token="accent-100">
+          <div class="h-14 rounded-md border border-line" style="background-color: #ffe1e3"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">accent-100</span>
+            <span class="block font-mono text-xs text-fg-muted">#ffe1e3</span>
+          </figcaption>
+        </figure>
+        <figure data-token="accent-200">
+          <div class="h-14 rounded-md border border-line" style="background-color: #ffc7cc"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">accent-200</span>
+            <span class="block font-mono text-xs text-fg-muted">#ffc7cc</span>
+          </figcaption>
+        </figure>
+        <figure data-token="accent-600">
+          <div class="h-14 rounded-md border border-line" style="background-color: #d7192d"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">accent-600</span>
+            <span class="block font-mono text-xs text-fg-muted">#d7192d</span>
+          </figcaption>
+        </figure>
+        <figure data-token="accent-700">
+          <div class="h-14 rounded-md border border-line" style="background-color: #b4111f"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">accent-700</span>
+            <span class="block font-mono text-xs text-fg-muted">#b4111f</span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+    <div>
+      <h3 class="text-sm font-semibold text-fg-muted">Állapot: hitelesítve – zöld</h3>
+      <div class="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
+        <figure data-token="trust-50">
+          <div class="h-14 rounded-md border border-line" style="background-color: #f0fdf4"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">trust-50</span>
+            <span class="block font-mono text-xs text-fg-muted">#f0fdf4</span>
+          </figcaption>
+        </figure>
+        <figure data-token="trust-200">
+          <div class="h-14 rounded-md border border-line" style="background-color: #bbf7d0"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">trust-200</span>
+            <span class="block font-mono text-xs text-fg-muted">#bbf7d0</span>
+          </figcaption>
+        </figure>
+        <figure data-token="trust-700">
+          <div class="h-14 rounded-md border border-line" style="background-color: #15803d"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">trust-700</span>
+            <span class="block font-mono text-xs text-fg-muted">#15803d</span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+    <div>
+      <h3 class="text-sm font-semibold text-fg-muted">Állapot: figyelem – borostyán</h3>
+      <div class="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
+        <figure data-token="caution-50">
+          <div class="h-14 rounded-md border border-line" style="background-color: #fffbeb"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">caution-50</span>
+            <span class="block font-mono text-xs text-fg-muted">#fffbeb</span>
+          </figcaption>
+        </figure>
+        <figure data-token="caution-200">
+          <div class="h-14 rounded-md border border-line" style="background-color: #fde68a"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">caution-200</span>
+            <span class="block font-mono text-xs text-fg-muted">#fde68a</span>
+          </figcaption>
+        </figure>
+        <figure data-token="caution-700">
+          <div class="h-14 rounded-md border border-line" style="background-color: #b45309"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">caution-700</span>
+            <span class="block font-mono text-xs text-fg-muted">#b45309</span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+    <div>
+      <h3 class="text-sm font-semibold text-fg-muted">Szerepalapú nevek – a komponensek ezeket használják</h3>
+      <div class="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
+        <figure data-token="canvas">
+          <div class="h-14 rounded-md border border-line" style="background-color: #ffffff"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">canvas</span>
+            <span class="block font-mono text-xs text-fg-muted">#ffffff · white</span>
+          </figcaption>
+        </figure>
+        <figure data-token="surface">
+          <div class="h-14 rounded-md border border-line" style="background-color: #fafafa"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">surface</span>
+            <span class="block font-mono text-xs text-fg-muted">#fafafa · neutral-50</span>
+          </figcaption>
+        </figure>
+        <figure data-token="fg">
+          <div class="h-14 rounded-md border border-line" style="background-color: #0a0a0a"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">fg</span>
+            <span class="block font-mono text-xs text-fg-muted">#0a0a0a · neutral-950</span>
+          </figcaption>
+        </figure>
+        <figure data-token="fg-muted">
+          <div class="h-14 rounded-md border border-line" style="background-color: #525252"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">fg-muted</span>
+            <span class="block font-mono text-xs text-fg-muted">#525252 · neutral-600</span>
+          </figcaption>
+        </figure>
+        <figure data-token="line">
+          <div class="h-14 rounded-md border border-line" style="background-color: #e5e5e5"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">line</span>
+            <span class="block font-mono text-xs text-fg-muted">#e5e5e5 · neutral-200</span>
+          </figcaption>
+        </figure>
+        <figure data-token="line-strong">
+          <div class="h-14 rounded-md border border-line" style="background-color: #737373"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">line-strong</span>
+            <span class="block font-mono text-xs text-fg-muted">#737373 · neutral-500</span>
+          </figcaption>
+        </figure>
+        <figure data-token="primary">
+          <div class="h-14 rounded-md border border-line" style="background-color: #d7192d"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">primary</span>
+            <span class="block font-mono text-xs text-fg-muted">#d7192d · accent-600</span>
+          </figcaption>
+        </figure>
+        <figure data-token="primary-hover">
+          <div class="h-14 rounded-md border border-line" style="background-color: #b4111f"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">primary-hover</span>
+            <span class="block font-mono text-xs text-fg-muted">#b4111f · accent-700</span>
+          </figcaption>
+        </figure>
+        <figure data-token="on-primary">
+          <div class="h-14 rounded-md border border-line" style="background-color: #ffffff"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">on-primary</span>
+            <span class="block font-mono text-xs text-fg-muted">#ffffff · white</span>
+          </figcaption>
+        </figure>
+        <figure data-token="danger">
+          <div class="h-14 rounded-md border border-line" style="background-color: #b4111f"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">danger</span>
+            <span class="block font-mono text-xs text-fg-muted">#b4111f · accent-700</span>
+          </figcaption>
+        </figure>
+        <figure data-token="danger-surface">
+          <div class="h-14 rounded-md border border-line" style="background-color: #fff1f2"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">danger-surface</span>
+            <span class="block font-mono text-xs text-fg-muted">#fff1f2 · accent-50</span>
+          </figcaption>
+        </figure>
+        <figure data-token="focus">
+          <div class="h-14 rounded-md border border-line" style="background-color: #0a0a0a"></div>
+          <figcaption class="mt-2 text-sm">
+            <span class="block font-medium">focus</span>
+            <span class="block font-mono text-xs text-fg-muted">#0a0a0a · neutral-950</span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+    </div></div>
+</section>
+
+<section id="kontraszt" class="scroll-mt-6 border-t border-line pt-10">
+  <h2 class="text-2xl font-semibold tracking-tight">Kontraszt (WCAG 2.2 AA)</h2>
+  <p class="mt-2 max-w-3xl leading-7 text-fg-muted">Szövegnél legalább 4.5:1 (1.4.3), felületi elemnél – mezőkeret, fókuszjelző, az aktív elem vonala – legalább 3:1 (1.4.11). Az állapotikonok a mellettük álló szöveg színét öröklik, így rájuk is a szöveg aránya érvényes. A táblázatot a <code class="font-mono text-sm">tools/design/contrast.mjs</code> számolja a tokenekből; a teszt elbukik, ha egy páros nem felel meg.</p>
+  <div class="mt-6"><div role="region" tabindex="0" aria-label="Kontraszttáblázat" class="overflow-x-auto rounded-lg border border-line focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+      <table class="w-full min-w-[44rem] text-left text-sm">
+        <thead class="bg-surface text-fg-muted">
+          <tr>
+            <th scope="col" class="px-4 py-2.5 font-medium">Felhasználás</th>
+            <th scope="col" class="px-4 py-2.5 font-medium">Előtér / háttér</th>
+            <th scope="col" class="px-4 py-2.5 font-medium">Minta</th>
+            <th scope="col" class="px-4 py-2.5 text-right font-medium">Arány</th>
+            <th scope="col" class="px-4 py-2.5 text-right font-medium">Minimum</th>
+            <th scope="col" class="px-4 py-2.5 font-medium">Eredmény</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-line">
+        <tr>
+          <td class="px-4 py-2.5">törzsszöveg</td>
+          <td class="px-4 py-2.5"><code class="font-mono text-xs">fg</code> / <code class="font-mono text-xs">canvas</code></td>
+          <td class="px-4 py-2"><span class="inline-flex h-9 w-14 items-center justify-center rounded-md border border-line font-semibold" style="color: #0a0a0a; background-color: #ffffff">Aa</span></td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums">19.80:1</td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums text-fg-muted">4.5:1</td>
+          <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1 font-medium"><i data-lucide="check" class="size-4" aria-hidden="true"></i>megfelel</span></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-2.5">szöveg szürke felületen</td>
+          <td class="px-4 py-2.5"><code class="font-mono text-xs">fg</code> / <code class="font-mono text-xs">surface</code></td>
+          <td class="px-4 py-2"><span class="inline-flex h-9 w-14 items-center justify-center rounded-md border border-line font-semibold" style="color: #0a0a0a; background-color: #fafafa">Aa</span></td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums">18.97:1</td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums text-fg-muted">4.5:1</td>
+          <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1 font-medium"><i data-lucide="check" class="size-4" aria-hidden="true"></i>megfelel</span></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-2.5">másodlagos szöveg</td>
+          <td class="px-4 py-2.5"><code class="font-mono text-xs">fg-muted</code> / <code class="font-mono text-xs">canvas</code></td>
+          <td class="px-4 py-2"><span class="inline-flex h-9 w-14 items-center justify-center rounded-md border border-line font-semibold" style="color: #525252; background-color: #ffffff">Aa</span></td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums">7.81:1</td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums text-fg-muted">4.5:1</td>
+          <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1 font-medium"><i data-lucide="check" class="size-4" aria-hidden="true"></i>megfelel</span></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-2.5">másodlagos szöveg szürke felületen</td>
+          <td class="px-4 py-2.5"><code class="font-mono text-xs">fg-muted</code> / <code class="font-mono text-xs">surface</code></td>
+          <td class="px-4 py-2"><span class="inline-flex h-9 w-14 items-center justify-center rounded-md border border-line font-semibold" style="color: #525252; background-color: #fafafa">Aa</span></td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums">7.49:1</td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums text-fg-muted">4.5:1</td>
+          <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1 font-medium"><i data-lucide="check" class="size-4" aria-hidden="true"></i>megfelel</span></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-2.5">elsődleges gomb felirata</td>
+          <td class="px-4 py-2.5"><code class="font-mono text-xs">on-primary</code> / <code class="font-mono text-xs">primary</code></td>
+          <td class="px-4 py-2"><span class="inline-flex h-9 w-14 items-center justify-center rounded-md border border-line font-semibold" style="color: #ffffff; background-color: #d7192d">Aa</span></td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums">5.16:1</td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums text-fg-muted">4.5:1</td>
+          <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1 font-medium"><i data-lucide="check" class="size-4" aria-hidden="true"></i>megfelel</span></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-2.5">elsődleges gomb felirata (rámutatva)</td>
+          <td class="px-4 py-2.5"><code class="font-mono text-xs">on-primary</code> / <code class="font-mono text-xs">primary-hover</code></td>
+          <td class="px-4 py-2"><span class="inline-flex h-9 w-14 items-center justify-center rounded-md border border-line font-semibold" style="color: #ffffff; background-color: #b4111f">Aa</span></td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums">6.91:1</td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums text-fg-muted">4.5:1</td>
+          <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1 font-medium"><i data-lucide="check" class="size-4" aria-hidden="true"></i>megfelel</span></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-2.5">piros szöveg, hivatkozás</td>
+          <td class="px-4 py-2.5"><code class="font-mono text-xs">primary</code> / <code class="font-mono text-xs">canvas</code></td>
+          <td class="px-4 py-2"><span class="inline-flex h-9 w-14 items-center justify-center rounded-md border border-line font-semibold" style="color: #d7192d; background-color: #ffffff">Aa</span></td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums">5.16:1</td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums text-fg-muted">4.5:1</td>
+          <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1 font-medium"><i data-lucide="check" class="size-4" aria-hidden="true"></i>megfelel</span></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-2.5">fekete gomb felirata</td>
+          <td class="px-4 py-2.5"><code class="font-mono text-xs">white</code> / <code class="font-mono text-xs">black</code></td>
+          <td class="px-4 py-2"><span class="inline-flex h-9 w-14 items-center justify-center rounded-md border border-line font-semibold" style="color: #ffffff; background-color: #0a0a0a">Aa</span></td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums">19.80:1</td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums text-fg-muted">4.5:1</td>
+          <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1 font-medium"><i data-lucide="check" class="size-4" aria-hidden="true"></i>megfelel</span></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-2.5">mezőhiba szövege</td>
+          <td class="px-4 py-2.5"><code class="font-mono text-xs">danger</code> / <code class="font-mono text-xs">canvas</code></td>
+          <td class="px-4 py-2"><span class="inline-flex h-9 w-14 items-center justify-center rounded-md border border-line font-semibold" style="color: #b4111f; background-color: #ffffff">Aa</span></td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums">6.91:1</td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums text-fg-muted">4.5:1</td>
+          <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1 font-medium"><i data-lucide="check" class="size-4" aria-hidden="true"></i>megfelel</span></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-2.5">hibaüzenet doboza</td>
+          <td class="px-4 py-2.5"><code class="font-mono text-xs">danger</code> / <code class="font-mono text-xs">danger-surface</code></td>
+          <td class="px-4 py-2"><span class="inline-flex h-9 w-14 items-center justify-center rounded-md border border-line font-semibold" style="color: #b4111f; background-color: #fff1f2">Aa</span></td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums">6.29:1</td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums text-fg-muted">4.5:1</td>
+          <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1 font-medium"><i data-lucide="check" class="size-4" aria-hidden="true"></i>megfelel</span></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-2.5">hitelesítve jelvény</td>
+          <td class="px-4 py-2.5"><code class="font-mono text-xs">trust-700</code> / <code class="font-mono text-xs">trust-50</code></td>
+          <td class="px-4 py-2"><span class="inline-flex h-9 w-14 items-center justify-center rounded-md border border-line font-semibold" style="color: #15803d; background-color: #f0fdf4">Aa</span></td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums">4.79:1</td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums text-fg-muted">4.5:1</td>
+          <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1 font-medium"><i data-lucide="check" class="size-4" aria-hidden="true"></i>megfelel</span></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-2.5">hitelesítve felirat</td>
+          <td class="px-4 py-2.5"><code class="font-mono text-xs">trust-700</code> / <code class="font-mono text-xs">canvas</code></td>
+          <td class="px-4 py-2"><span class="inline-flex h-9 w-14 items-center justify-center rounded-md border border-line font-semibold" style="color: #15803d; background-color: #ffffff">Aa</span></td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums">5.02:1</td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums text-fg-muted">4.5:1</td>
+          <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1 font-medium"><i data-lucide="check" class="size-4" aria-hidden="true"></i>megfelel</span></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-2.5">folyamatban / figyelem jelvény</td>
+          <td class="px-4 py-2.5"><code class="font-mono text-xs">caution-700</code> / <code class="font-mono text-xs">caution-50</code></td>
+          <td class="px-4 py-2"><span class="inline-flex h-9 w-14 items-center justify-center rounded-md border border-line font-semibold" style="color: #b45309; background-color: #fffbeb">Aa</span></td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums">4.84:1</td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums text-fg-muted">4.5:1</td>
+          <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1 font-medium"><i data-lucide="check" class="size-4" aria-hidden="true"></i>megfelel</span></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-2.5">figyelem felirat</td>
+          <td class="px-4 py-2.5"><code class="font-mono text-xs">caution-700</code> / <code class="font-mono text-xs">canvas</code></td>
+          <td class="px-4 py-2"><span class="inline-flex h-9 w-14 items-center justify-center rounded-md border border-line font-semibold" style="color: #b45309; background-color: #ffffff">Aa</span></td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums">5.02:1</td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums text-fg-muted">4.5:1</td>
+          <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1 font-medium"><i data-lucide="check" class="size-4" aria-hidden="true"></i>megfelel</span></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-2.5">helykitöltő szöveg (placeholder)</td>
+          <td class="px-4 py-2.5"><code class="font-mono text-xs">fg-muted</code> / <code class="font-mono text-xs">canvas</code></td>
+          <td class="px-4 py-2"><span class="inline-flex h-9 w-14 items-center justify-center rounded-md border border-line font-semibold" style="color: #525252; background-color: #ffffff">Aa</span></td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums">7.81:1</td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums text-fg-muted">4.5:1</td>
+          <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1 font-medium"><i data-lucide="check" class="size-4" aria-hidden="true"></i>megfelel</span></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-2.5">űrlapmező kerete</td>
+          <td class="px-4 py-2.5"><code class="font-mono text-xs">line-strong</code> / <code class="font-mono text-xs">canvas</code></td>
+          <td class="px-4 py-2"><span class="inline-flex h-9 w-14 items-center justify-center rounded-md border border-line" style="background-color: #ffffff"><span class="block size-5 rounded-sm border-2" style="border-color: #737373"></span></span></td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums">4.74:1</td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums text-fg-muted">3:1</td>
+          <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1 font-medium"><i data-lucide="check" class="size-4" aria-hidden="true"></i>megfelel</span></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-2.5">üres csillag kerete</td>
+          <td class="px-4 py-2.5"><code class="font-mono text-xs">line-strong</code> / <code class="font-mono text-xs">canvas</code></td>
+          <td class="px-4 py-2"><span class="inline-flex h-9 w-14 items-center justify-center rounded-md border border-line" style="background-color: #ffffff"><span class="block size-5 rounded-sm border-2" style="border-color: #737373"></span></span></td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums">4.74:1</td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums text-fg-muted">3:1</td>
+          <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1 font-medium"><i data-lucide="check" class="size-4" aria-hidden="true"></i>megfelel</span></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-2.5">aktív fül, aktív menüpont jelzése</td>
+          <td class="px-4 py-2.5"><code class="font-mono text-xs">primary</code> / <code class="font-mono text-xs">canvas</code></td>
+          <td class="px-4 py-2"><span class="inline-flex h-9 w-14 items-center justify-center rounded-md border border-line" style="background-color: #ffffff"><span class="block size-5 rounded-sm border-2" style="border-color: #d7192d"></span></span></td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums">5.16:1</td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums text-fg-muted">3:1</td>
+          <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1 font-medium"><i data-lucide="check" class="size-4" aria-hidden="true"></i>megfelel</span></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-2.5">fókuszjelző</td>
+          <td class="px-4 py-2.5"><code class="font-mono text-xs">focus</code> / <code class="font-mono text-xs">canvas</code></td>
+          <td class="px-4 py-2"><span class="inline-flex h-9 w-14 items-center justify-center rounded-md border border-line" style="background-color: #ffffff"><span class="block size-5 rounded-sm border-2" style="border-color: #0a0a0a"></span></span></td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums">19.80:1</td>
+          <td class="px-4 py-2.5 text-right font-mono tabular-nums text-fg-muted">3:1</td>
+          <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1 font-medium"><i data-lucide="check" class="size-4" aria-hidden="true"></i>megfelel</span></td>
+        </tr>
+        </tbody>
+      </table></div></div>
+</section>
+
+<section id="tipografia" class="scroll-mt-6 border-t border-line pt-10">
+  <h2 class="text-2xl font-semibold tracking-tight">Tipográfia</h2>
+  <p class="mt-2 max-w-3xl leading-7 text-fg-muted">Inter a felület minden szövegének (jól olvasható kis méretben is, teljes magyar ékezetkészlettel), JetBrains Mono a hash-eknek és a tranzakció-azonosítóknak – az egyenletes jelszélesség miatt a hosszú hexadecimális értékek könnyen összevethetők. A törzsszöveg legalább 16 px; a skála a Tailwind alapskálája.</p>
+  <div class="mt-6"><div class="divide-y divide-line rounded-lg border border-line">
+
+    <div class="grid gap-2 p-4 md:grid-cols-[12rem_1fr_16rem] md:items-baseline md:gap-6">
+      <p class="text-sm font-medium">Oldalcím<span class="block text-fg-muted">30 px · 600</span></p>
+      <p class="text-3xl font-semibold tracking-tight">Galéria</p>
+      <code class="font-mono text-xs text-fg-muted">text-3xl font-semibold tracking-tight</code>
+    </div>
+    <div class="grid gap-2 p-4 md:grid-cols-[12rem_1fr_16rem] md:items-baseline md:gap-6">
+      <p class="text-sm font-medium">Szakaszcím<span class="block text-fg-muted">20 px · 600</span></p>
+      <p class="text-xl font-semibold tracking-tight">Blokklánc-tanúsítvány</p>
+      <code class="font-mono text-xs text-fg-muted">text-xl font-semibold tracking-tight</code>
+    </div>
+    <div class="grid gap-2 p-4 md:grid-cols-[12rem_1fr_16rem] md:items-baseline md:gap-6">
+      <p class="text-sm font-medium">Kártyacím<span class="block text-fg-muted">16 px · 500</span></p>
+      <p class="text-base font-medium">Őszi erdő ködben</p>
+      <code class="font-mono text-xs text-fg-muted">text-base font-medium</code>
+    </div>
+    <div class="grid gap-2 p-4 md:grid-cols-[12rem_1fr_16rem] md:items-baseline md:gap-6">
+      <p class="text-sm font-medium">Törzsszöveg<span class="block text-fg-muted">16 px · 400 · sorköz 28 px</span></p>
+      <p class="text-base leading-7">A kép ujjlenyomata a blokkláncon rögzül, így a módosított másolata sem tölthető fel újra.</p>
+      <code class="font-mono text-xs text-fg-muted">text-base leading-7</code>
+    </div>
+    <div class="grid gap-2 p-4 md:grid-cols-[12rem_1fr_16rem] md:items-baseline md:gap-6">
+      <p class="text-sm font-medium">Másodlagos szöveg<span class="block text-fg-muted">14 px · 400</span></p>
+      <p class="text-sm text-fg-muted">Feltöltve: 2026. október 4.</p>
+      <code class="font-mono text-xs text-fg-muted">text-sm text-fg-muted</code>
+    </div>
+    <div class="grid gap-2 p-4 md:grid-cols-[12rem_1fr_16rem] md:items-baseline md:gap-6">
+      <p class="text-sm font-medium">Ár<span class="block text-fg-muted">18 px · 600 · táblázatos számok</span></p>
+      <p class="text-lg font-semibold tabular-nums">12&nbsp;500&nbsp;Ft</p>
+      <code class="font-mono text-xs text-fg-muted">text-lg font-semibold tabular-nums</code>
+    </div>
+    <div class="grid gap-2 p-4 md:grid-cols-[12rem_1fr_16rem] md:items-baseline md:gap-6">
+      <p class="text-sm font-medium">Hash, azonosító<span class="block text-fg-muted">JetBrains Mono · 14 px</span></p>
+      <p class="font-mono text-sm">0x5a1f9c3e…8b20d47e</p>
+      <code class="font-mono text-xs text-fg-muted">font-mono text-sm</code>
+    </div>
+  </div></div>
+</section>
+
+<section id="formak" class="scroll-mt-6 border-t border-line pt-10">
+  <h2 class="text-2xl font-semibold tracking-tight">Sarkok, árnyék, elrendezés</h2>
+  <p class="mt-2 max-w-3xl leading-7 text-fg-muted">Visszafogott lekerekítés és egyetlen, halvány kártyaárnyék: a hangsúlyt a fotók kapják. A térközök a Tailwind 4 px-es skáláját követik; a tartalom legfeljebb 1280 px széles.</p>
+  <div class="mt-6"><div class="grid gap-6 lg:grid-cols-2">
+    <div class="flex flex-wrap items-end gap-4">
+
+      <figure class="w-36">
+        <div class="h-20 border-2 border-fg bg-surface rounded-sm"></div>
+        <figcaption class="mt-2 text-sm"><code class="font-mono text-xs">rounded-sm</code><span class="block text-fg-muted">4 px – kis elemek</span></figcaption>
+      </figure>
+      <figure class="w-36">
+        <div class="h-20 border-2 border-fg bg-surface rounded-md"></div>
+        <figcaption class="mt-2 text-sm"><code class="font-mono text-xs">rounded-md</code><span class="block text-fg-muted">6 px – gomb, mező</span></figcaption>
+      </figure>
+      <figure class="w-36">
+        <div class="h-20 border-2 border-fg bg-surface rounded-lg"></div>
+        <figcaption class="mt-2 text-sm"><code class="font-mono text-xs">rounded-lg</code><span class="block text-fg-muted">8 px – kártya, panel</span></figcaption>
+      </figure>
+      <figure class="w-36">
+        <div class="h-20 border-2 border-fg bg-surface rounded-full"></div>
+        <figcaption class="mt-2 text-sm"><code class="font-mono text-xs">rounded-full</code><span class="block text-fg-muted">jelvény, avatar</span></figcaption>
+      </figure>
+      <figure class="w-36">
+        <div class="h-20 rounded-lg border border-line bg-canvas shadow-card"></div>
+        <figcaption class="mt-2 text-sm"><code class="font-mono text-xs">shadow-card</code><span class="block text-fg-muted">fotókártya</span></figcaption>
+      </figure>
+    </div>
+    <table class="w-full text-left text-sm">
+      <caption class="mb-2 text-left font-medium">Töréspontok és galériaoszlopok</caption>
+      <thead class="text-fg-muted"><tr><th scope="col" class="py-1.5 font-medium">Töréspont</th><th scope="col" class="py-1.5 font-medium">Szélesség</th><th scope="col" class="py-1.5 font-medium">Galéria</th><th scope="col" class="py-1.5 font-medium">Oldalmargó</th></tr></thead>
+      <tbody class="divide-y divide-line border-y border-line">
+        <tr><td class="py-1.5">alap (mobil)</td><td>&lt; 640 px</td><td>1 oszlop</td><td>16 px</td></tr>
+        <tr><td class="py-1.5"><code class="font-mono text-xs">sm</code></td><td>≥ 640 px</td><td>2 oszlop</td><td>24 px</td></tr>
+        <tr><td class="py-1.5"><code class="font-mono text-xs">lg</code></td><td>≥ 1024 px</td><td>3 oszlop</td><td>32 px</td></tr>
+        <tr><td class="py-1.5"><code class="font-mono text-xs">xl</code></td><td>≥ 1280 px</td><td>4 oszlop</td><td>32 px</td></tr>
+      </tbody>
+    </table>
+  </div></div>
+</section>
+
+<section id="bizalom" class="scroll-mt-6 border-t border-line pt-10">
+  <h2 class="text-2xl font-semibold tracking-tight">A bizalom vizuális nyelve</h2>
+  <p class="mt-2 max-w-3xl leading-7 text-fg-muted">Minden állapot ugyanúgy jelenik meg a galériában, az adatlapon, a vezérlőpulton és az ellenőrzésnél: ikon + szöveg + szín. A zöld pajzs kizárólag a blokkláncon igazolt hitelességet jelenti – sikeres mentésre, fizetésre nem használjuk, hogy a jelentése ne kopjon el. A „nincs a nyilvántartásban” semleges, nem piros: nem vádol.</p>
+  <div class="mt-6"><div role="region" tabindex="0" aria-label="A bizalom vizuális nyelve – állapotok" class="overflow-x-auto rounded-lg border border-line focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+    <table class="w-full min-w-[44rem] text-left text-sm">
+      <thead class="bg-surface text-fg-muted">
+        <tr><th scope="col" class="px-4 py-2.5 font-medium">Hol</th><th scope="col" class="px-4 py-2.5 font-medium">Állapot (API)</th><th scope="col" class="px-4 py-2.5 font-medium">Jelvény</th><th scope="col" class="px-4 py-2.5 font-medium">Jelentés</th></tr>
+      </thead>
+      <tbody class="divide-y divide-line">
+
+        <tr>
+          <td class="px-4 py-3 text-fg-muted">Kép állapota</td>
+          <td class="px-4 py-3"><code class="font-mono text-xs">REGISTERED</code></td>
+          <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-sm font-medium border-trust-200 bg-trust-50 text-trust-700"><i data-lucide="shield-check" class="size-4 shrink-0" aria-hidden="true"></i>Hitelesítve</span></td>
+          <td class="px-4 py-3 leading-6">Az ujjlenyomat a blokkláncon rögzítve; a kép nyilvános és megvásárolható.</td>
+        </tr>
+        <tr>
+          <td class="px-4 py-3 text-fg-muted">Kép állapota</td>
+          <td class="px-4 py-3"><code class="font-mono text-xs">PENDING_CHAIN</code></td>
+          <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-sm font-medium border-caution-200 bg-caution-50 text-caution-700"><i data-lucide="clock" class="size-4 shrink-0" aria-hidden="true"></i>Regisztrálás folyamatban</span></td>
+          <td class="px-4 py-3 leading-6">A tranzakció elküldve, megerősítésre vár; a kép addig csak a tulajdonosának látszik.</td>
+        </tr>
+        <tr>
+          <td class="px-4 py-3 text-fg-muted">Kép állapota</td>
+          <td class="px-4 py-3"><code class="font-mono text-xs">CHAIN_FAILED</code></td>
+          <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-sm font-medium border-accent-200 bg-danger-surface text-danger"><i data-lucide="shield-alert" class="size-4 shrink-0" aria-hidden="true"></i>Sikertelen regisztráció</span></td>
+          <td class="px-4 py-3 leading-6">A tranzakció nem ment át; az adminisztrátor újrapróbálhatja (gázdíjba kerül).</td>
+        </tr>
+        <tr>
+          <td class="px-4 py-3 text-fg-muted">Kép állapota</td>
+          <td class="px-4 py-3"><code class="font-mono text-xs">HIDDEN · OWNER</code></td>
+          <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-sm font-medium border-line bg-surface text-fg-muted"><i data-lucide="eye-off" class="size-4 shrink-0" aria-hidden="true"></i>Elrejtve</span></td>
+          <td class="px-4 py-3 leading-6">A tulajdonos levette a galériából; a láncon a rekord megmarad, a korábbi vásárló letöltheti.</td>
+        </tr>
+        <tr>
+          <td class="px-4 py-3 text-fg-muted">Kép állapota</td>
+          <td class="px-4 py-3"><code class="font-mono text-xs">HIDDEN · ADMIN, OWNER_AND_ADMIN</code></td>
+          <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-sm font-medium border-accent-200 bg-danger-surface text-danger"><i data-lucide="ban" class="size-4 shrink-0" aria-hidden="true"></i>Moderátor eltávolította</span></td>
+          <td class="px-4 py-3 leading-6">Moderátori levétel (akkor is ez látszik, ha a tulajdonos is elrejtette); amíg érvényben van, a vásárló sem töltheti le az eredetit.</td>
+        </tr>
+        <tr>
+          <td class="px-4 py-3 text-fg-muted">Ellenőrzés</td>
+          <td class="px-4 py-3"><code class="font-mono text-xs">VERIFIED</code></td>
+          <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-sm font-medium border-trust-200 bg-trust-50 text-trust-700"><i data-lucide="shield-check" class="size-4 shrink-0" aria-hidden="true"></i>Hiteles, regisztrált kép</span></td>
+          <td class="px-4 py-3 leading-6">A fájl bitre megegyezik egy regisztrált képpel (azonos SHA-256 ujjlenyomat).</td>
+        </tr>
+        <tr>
+          <td class="px-4 py-3 text-fg-muted">Ellenőrzés</td>
+          <td class="px-4 py-3"><code class="font-mono text-xs">SIMILAR</code></td>
+          <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-sm font-medium border-caution-200 bg-caution-50 text-caution-700"><i data-lucide="scan-search" class="size-4 shrink-0" aria-hidden="true"></i>Hasonló regisztrált kép</span></td>
+          <td class="px-4 py-3 leading-6">Nem azonos, de a vizuális ujjlenyomat (dHash) szerint egy regisztrált kép módosított változata lehet.</td>
+        </tr>
+        <tr>
+          <td class="px-4 py-3 text-fg-muted">Ellenőrzés</td>
+          <td class="px-4 py-3"><code class="font-mono text-xs">NOT_FOUND</code></td>
+          <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-sm font-medium border-line bg-surface text-fg-muted"><i data-lucide="search-x" class="size-4 shrink-0" aria-hidden="true"></i>Nincs a nyilvántartásban</span></td>
+          <td class="px-4 py-3 leading-6">Sem azonos, sem hasonló regisztrált kép – ez önmagában nem jelent hamisítást.</td>
+        </tr>
+        <tr>
+          <td class="px-4 py-3 text-fg-muted">Feltöltés (409)</td>
+          <td class="px-4 py-3"><code class="font-mono text-xs">DUPLICATE_EXACT / DUPLICATE_SIMILAR</code></td>
+          <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-sm font-medium border-accent-200 bg-danger-surface text-danger"><i data-lucide="copy-x" class="size-4 shrink-0" aria-hidden="true"></i>Már regisztrált kép</span></td>
+          <td class="px-4 py-3 leading-6">Azonos vagy hasonló kép már szerepel a láncon, ezért nem tölthető fel újra.</td>
+        </tr>
+      </tbody>
+    </table></div>
+  <ul class="mt-6 grid gap-3 text-sm leading-6 md:grid-cols-3">
+    <li class="rounded-lg border border-line p-4"><span class="font-medium">Ellenőrizhető, nem csak állított.</span> A tanúsítvány a hash-t és a tranzakciót is megmutatja, a tranzakció az Etherscanen megnyitható.</li>
+    <li class="rounded-lg border border-line p-4"><span class="font-medium">Rövidített, de teljes.</span> A hash eleje és vége látszik (<code class="font-mono text-xs">0x5a1f9c3e…8b20d47e</code>), a teljes érték egy kattintással másolható.</li>
+    <li class="rounded-lg border border-line p-4"><span class="font-medium">Nem csak szín.</span> Színtévesztő felhasználó és képernyőolvasó is ugyanazt az információt kapja: az ikon és a szöveg önmagában is érthető.</li>
+  </ul></div>
+</section>
+
+<section id="komponensek" class="scroll-mt-6 border-t border-line pt-10">
+  <h2 class="text-2xl font-semibold tracking-tight">Komponensek</h2>
+  <p class="mt-2 max-w-3xl leading-7 text-fg-muted">A kliens (L18–L23) ezekből a mintákból épül. Mind a szerepalapú tokeneket használja; a rámutatás (hover) és a billentyűzetfókusz állapota is része a mintának.</p>
+  <div class="mt-6"><div class="grid gap-6 xl:grid-cols-2">
+<div class="rounded-lg border border-line p-5">
+  <h3 class="text-sm font-semibold text-fg-muted">Gombok</h3>
+  <div class="mt-4"><div class="flex flex-wrap items-center gap-3">
+    <button type="button" class="inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus bg-primary text-on-primary hover:bg-primary-hover "><i data-lucide="shopping-cart" class="size-4" aria-hidden="true"></i>Megveszem</button>
+    <button type="button" class="inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus bg-black text-white hover:bg-neutral-800 "><i data-lucide="upload" class="size-4" aria-hidden="true"></i>Feltöltés</button>
+    <button type="button" class="inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus border border-line-strong bg-canvas text-fg hover:bg-surface ">Mégse</button>
+    <button type="button" class="inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus border border-danger bg-canvas text-danger hover:bg-danger-surface "><i data-lucide="ban" class="size-4" aria-hidden="true"></i>Letiltás</button>
+    <button type="button" aria-disabled="true" class="inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus cursor-progress border border-line bg-surface text-fg-muted"><i data-lucide="loader-circle" class="size-4 motion-safe:animate-spin" aria-hidden="true"></i>Fizetés indítása…</button>
+    <button type="button" class="inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus border border-line-strong bg-canvas text-fg hover:bg-surface outline-2 outline-offset-2 outline-focus">Fókuszban</button>
+  </div></div>
+  <p class="mt-4 border-t border-line pt-3 text-sm leading-6 text-fg-muted">Egy nézetben egyetlen piros gomb van: a fő művelet (vásárlás, feltöltés). A veszélyes művelet körvonalas és ikonos, így nem keveredik vele. A billentyűzetfókusz mindig látható fekete keret (2 px, 2 px távolsággal). Folyamatban lévő műveletnél aria-disabled (nem disabled, mert az a fókuszt elvenné), a felirat a folyamatot mondja („Fizetés indítása…”), a további kattintás hatástalan, az élő régió bejelenti az eredményt; a töltésjelző csak akkor forog, ha a felhasználó nem kért kevesebb mozgást. A gomb legalább 40 px magas (min-h, így nagyobb sor- és betűtávolságnál nő) – a WCAG 2.2 24 px-es minimumát bőven teljesíti.</p>
+</div>
+<div class="rounded-lg border border-line p-5">
+  <h3 class="text-sm font-semibold text-fg-muted">Űrlapmezők</h3>
+  <div class="mt-4"><div class="grid gap-5 sm:grid-cols-2">
+    <div>
+      <label for="sg-title" class="text-sm font-medium">Cím</label>
+      <input id="sg-title" class="mt-1.5 block min-h-10 w-full rounded-md border bg-canvas px-3 text-sm text-fg placeholder:text-fg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus border-line-strong" value="Őszi erdő ködben" aria-describedby="sg-title-help" />
+      <p id="sg-title-help" class="mt-1.5 text-sm text-fg-muted">Rövid, beszédes cím – a keresés is ebben keres.</p>
+    </div>
+    <div>
+      <label for="sg-price" class="text-sm font-medium">Ár (Ft)</label>
+      <input id="sg-price" class="mt-1.5 block min-h-10 w-full rounded-md border bg-canvas px-3 text-sm text-fg placeholder:text-fg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus border-danger" value="100" inputmode="numeric" aria-invalid="true" aria-describedby="sg-price-help sg-price-error" />
+      <p id="sg-price-help" class="mt-1.5 text-sm text-fg-muted">Egész forint, 175 és 9&nbsp;999&nbsp;999 Ft között.</p>
+      <p id="sg-price-error" class="mt-1 flex items-center gap-1.5 text-sm text-danger"><i data-lucide="circle-alert" class="size-4 shrink-0" aria-hidden="true"></i>Az ár legalább 175 Ft legyen.</p>
+    </div>
+    <div>
+      <label for="sg-category" class="text-sm font-medium">Kategória</label>
+      <select id="sg-category" class="mt-1.5 block min-h-10 w-full rounded-md border bg-canvas px-3 text-sm text-fg placeholder:text-fg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus border-line-strong"><option>Tájkép</option><option>Portré</option><option>Város</option></select>
+    </div>
+    <div>
+      <label for="sg-search" class="text-sm font-medium">Keresés</label>
+      <div class="relative">
+        <i data-lucide="search" class="pointer-events-none absolute left-3 top-1/2 mt-0.75 size-4 -translate-y-1/2 text-fg-muted" aria-hidden="true"></i>
+        <input id="sg-search" type="search" class="mt-1.5 block min-h-10 w-full rounded-md border bg-canvas px-3 text-sm text-fg placeholder:text-fg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus border-line-strong pl-9" placeholder="Cím vagy leírás…" />
+      </div>
+    </div>
+  </div></div>
+  <p class="mt-4 border-t border-line pt-3 text-sm leading-6 text-fg-muted">A címke látható, nem csak helykitöltő szöveg (kivétel a galéria és az admin keresőmezője: ott a nagyító ikon és a helykitöltő jelzi a célt, a címke a képernyőolvasónak szól). A hiba a mező alatt jelenik meg, ikonnal és a javítás módjával; a mező aria-invalid, és az aria-describedby a súgót és a hibát is felsorolja. A szerver magyar hibaüzenetei (Zod) változtatás nélkül megjeleníthetők.</p>
+</div>
+<div class="rounded-lg border border-line p-5">
+  <h3 class="text-sm font-semibold text-fg-muted">Állapotjelvények</h3>
+  <div class="mt-4"><div class="space-y-4">
+    <div class="flex flex-wrap gap-2"><span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-sm font-medium border-trust-200 bg-trust-50 text-trust-700"><i data-lucide="shield-check" class="size-4 shrink-0" aria-hidden="true"></i>Hitelesítve</span><span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-sm font-medium border-caution-200 bg-caution-50 text-caution-700"><i data-lucide="clock" class="size-4 shrink-0" aria-hidden="true"></i>Regisztrálás folyamatban</span><span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-sm font-medium border-accent-200 bg-danger-surface text-danger"><i data-lucide="shield-alert" class="size-4 shrink-0" aria-hidden="true"></i>Sikertelen regisztráció</span><span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-sm font-medium border-line bg-surface text-fg-muted"><i data-lucide="eye-off" class="size-4 shrink-0" aria-hidden="true"></i>Elrejtve</span><span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-sm font-medium border-accent-200 bg-danger-surface text-danger"><i data-lucide="ban" class="size-4 shrink-0" aria-hidden="true"></i>Moderátor eltávolította</span></div>
+    <div class="flex flex-wrap gap-2">
+      <span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-sm font-medium border-line bg-surface text-fg-muted"><i data-lucide="check" class="size-4 shrink-0" aria-hidden="true"></i>Kifizetve</span>
+      <span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-sm font-medium border-caution-200 bg-caution-50 text-caution-700"><i data-lucide="clock" class="size-4 shrink-0" aria-hidden="true"></i>Fizetésre vár</span>
+      <span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-sm font-medium border-accent-200 bg-danger-surface text-danger"><i data-lucide="circle-x" class="size-4 shrink-0" aria-hidden="true"></i>Sikertelen fizetés</span>
+      <span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-sm font-medium border-line bg-surface text-fg-muted"><i data-lucide="timer-off" class="size-4 shrink-0" aria-hidden="true"></i>Lejárt</span>
+    </div>
+  </div></div>
+  <p class="mt-4 border-t border-line pt-3 text-sm leading-6 text-fg-muted">Felső sor: a kép állapotai; alsó sor: a rendelés állapotai. A sikeres fizetés semleges – a zöld a blokklánc-hitelességé.</p>
+</div>
+<div class="rounded-lg border border-line p-5">
+  <h3 class="text-sm font-semibold text-fg-muted">Visszajelzés</h3>
+  <div class="mt-4"><div class="grid items-start gap-3 md:grid-cols-2">
+    <div role="status" class="flex items-start gap-3 rounded-lg bg-black px-4 py-3 text-sm text-white shadow-card">
+      <i data-lucide="check" class="mt-0.5 size-4 shrink-0" aria-hidden="true"></i><p><span class="font-medium">Mentve.</span> A kép adatai frissültek.</p>
+    </div>
+    <div role="alert" class="flex items-start gap-3 rounded-lg border border-accent-200 bg-danger-surface px-4 py-3 text-sm text-danger">
+      <i data-lucide="circle-alert" class="mt-0.5 size-4 shrink-0" aria-hidden="true"></i><p><span class="font-medium">Nem sikerült a feltöltés.</span> A fájl legfeljebb 15 MB lehet (JPEG, PNG vagy WebP).</p>
+    </div>
+  </div></div>
+  <p class="mt-4 border-t border-line pt-3 text-sm leading-6 text-fg-muted">A sikeres művelet rövid, fekete értesítés, a hiba piros doboz ikonnal, címmel és teendővel. A bejelentéshez az oldal egyetlen, végig jelen lévő élő régiót használ (role="status"): ide kerül a mentés, a másolás, a találatszám és a lánc-regisztráció állapotváltása; a role="alert" csak a hibáé. Az értesítés kiegészítő visszajelzés – az eredmény az oldalon is látszik –, ezért az eltűnése nem időkorlát (2.2.1); mégis legalább 5 másodpercig látszik, rámutatáskor megáll, az Escape eltünteti, és nincs benne művelet. A sikeré a pipa, a sikertelen kimeneté (pl. a lánc-regisztráció nem sikerült) a figyelmeztető ikon, a semleges változásé az „i” (WCAG 4.1.3).</p>
+</div>
+<div class="rounded-lg border border-line p-5">
+  <h3 class="text-sm font-semibold text-fg-muted">Fotókártya (galéria)</h3>
+  <div class="mt-4"><div class="grid max-w-xl gap-4 sm:grid-cols-2">
+
+  <article class="relative overflow-hidden rounded-lg border border-line bg-canvas shadow-card has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus">
+    <div class="grid aspect-[4/3] place-items-center bg-neutral-200 text-neutral-600"><i data-lucide="image" class="size-8" aria-hidden="true"></i></div>
+    <div class="p-3">
+      <h4 class="truncate font-medium"><a href="#" class="outline-none after:absolute after:inset-0">Őszi erdő ködben</a></h4>
+      <p class="text-sm text-fg-muted">Fotós neve</p>
+      <div class="mt-2 flex items-center justify-between">
+        <span class="text-lg font-semibold tabular-nums">12&nbsp;500&nbsp;Ft</span>
+        <span class="inline-flex items-center gap-1 text-sm"><i data-lucide="star" class="size-4 fill-current" aria-hidden="true"></i><span class="sr-only">Értékelés:</span>4,6 <span class="text-fg-muted">(12<span class="sr-only"> értékelés</span>)</span></span>
+      </div>
+      <p class="mt-2 inline-flex items-center gap-1 text-xs font-medium text-trust-700"><i data-lucide="shield-check" class="size-4" aria-hidden="true"></i>Hitelesítve</p>
+    </div>
+  </article>
+
+  <article class="relative overflow-hidden rounded-lg border border-line bg-canvas shadow-card has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus">
+    <div class="grid aspect-[4/3] place-items-center bg-surface text-fg-muted"><span class="flex flex-col items-center gap-1 text-sm"><i data-lucide="image-off" class="size-6" aria-hidden="true"></i>Előnézet nem érhető el</span></div>
+    <div class="p-3">
+      <h4 class="truncate font-medium"><a href="#" class="outline-none after:absolute after:inset-0">Hajnal a tónál</a></h4>
+      <p class="text-sm text-fg-muted">Fotós neve</p>
+      <div class="mt-2 flex items-center justify-between">
+        <span class="text-lg font-semibold tabular-nums">8&nbsp;900&nbsp;Ft</span>
+        <span class="inline-flex items-center gap-1 text-sm"><i data-lucide="star" class="size-4 fill-current" aria-hidden="true"></i><span class="sr-only">Értékelés:</span><span class="text-fg-muted">nincs értékelés</span></span>
+      </div>
+      <p class="mt-2 inline-flex items-center gap-1 text-xs font-medium text-trust-700"><i data-lucide="shield-check" class="size-4" aria-hidden="true"></i>Hitelesítve</p>
+    </div>
+  </article>
+  </div></div>
+  <p class="mt-4 border-t border-line pt-3 text-sm leading-6 text-fg-muted">A galériában csak hitelesített kép szerepel, ezért a kártya egy kis pajzzsal emlékeztet erre. A hiányzó előnézet helyén semleges helykitöltő áll. A cím a hivatkozás (címsor), de a teljes kártya kattintható, és a fókuszkeret is a kártyán jelenik meg. A bélyegkép alt="" (a cím leírja), az adatlap nagy képe „&lt;cím&gt; – vízjeles előnézet”.</p>
+</div>
+<div class="rounded-lg border border-line p-5">
+  <h3 class="text-sm font-semibold text-fg-muted">Blokklánc-tanúsítvány (adatlap)</h3>
+  <div class="mt-4"><section class="max-w-xl overflow-hidden rounded-lg border border-trust-200" aria-labelledby="sg-cert">
+    <header class="flex items-center gap-2 border-b border-trust-200 bg-trust-50 px-4 py-3 text-trust-700">
+      <i data-lucide="shield-check" class="size-5" aria-hidden="true"></i>
+      <h4 id="sg-cert" class="font-semibold">Hitelesítve a blokkláncon</h4>
+    </header>
+    <dl class="divide-y divide-line px-4 text-sm">
+
+      <div class="flex items-center justify-between gap-4 py-2.5"><dt class="text-fg-muted">Hálózat</dt><dd class="flex items-center gap-1 text-right">Ethereum Sepolia (teszthálózat)</dd></div>
+      <div class="flex items-center justify-between gap-4 py-2.5"><dt class="text-fg-muted">Regisztrálva</dt><dd class="flex items-center gap-1 text-right">2026. 10. 04. 14:32</dd></div>
+      <div class="flex items-center justify-between gap-4 py-2.5"><dt class="text-fg-muted">SHA-256</dt><dd class="flex items-center gap-1 text-right"><span class="font-mono">0x5a1f9c3e…8b20d47e</span><button type="button" class="grid size-9 place-items-center rounded-md text-fg-muted hover:bg-surface hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus" aria-label="A teljes SHA-256 másolása"><i data-lucide="copy" class="size-4" aria-hidden="true"></i></button></dd></div>
+      <div class="flex items-center justify-between gap-4 py-2.5"><dt class="text-fg-muted">dHash</dt><dd class="flex items-center gap-1 text-right"><span class="font-mono">f0e4c8d0b0a09080</span></dd></div>
+      <div class="flex items-center justify-between gap-4 py-2.5"><dt class="text-fg-muted">Tranzakció</dt><dd class="flex items-center gap-1 text-right"><a href="#" class="inline-flex items-center gap-1 font-mono text-fg underline underline-offset-2 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">0x9c4e…1b7a<i data-lucide="external-link" class="size-3.5" aria-hidden="true"></i><span class="sr-only">(megnyitás az Etherscanen)</span></a></dd></div>
+    </dl>
+    <p class="border-t border-line bg-surface px-4 py-3 text-xs leading-5 text-fg-muted">A láncra csak az ujjlenyomat kerül, maga a kép nem. A rekord nyilvános és utólag nem módosítható.</p>
+  </section></div>
+  <p class="mt-4 border-t border-line pt-3 text-sm leading-6 text-fg-muted">Függőben lévő regisztrációnál ugyanez a doboz borostyán „Regisztrálás folyamatban” fejléccel jelenik meg, sikertelennél piros „Sikertelen regisztráció” fejléccel és – az adminisztrátornak – „Újrapróbálás” gombbal. Ha a tranzakció adatai nem ismertek, a sorában „A tranzakció adatai nem érhetők el” áll; a függő (még meg nem erősített) tranzakció hivatkozása „függő tranzakció” címkét kap. A másolás sikerét az oldal élő régiója jelenti be („Másolva”).</p>
+</div>
+<div class="rounded-lg border border-line p-5">
+  <h3 class="text-sm font-semibold text-fg-muted">Értékelés</h3>
+  <div class="mt-4"><div class="flex flex-wrap items-center gap-8">
+    <p class="inline-flex items-center gap-2">
+      <span class="inline-flex text-fg" aria-hidden="true"><i data-lucide="star" class="size-5 fill-current" aria-hidden="true"></i><i data-lucide="star" class="size-5 fill-current" aria-hidden="true"></i><i data-lucide="star" class="size-5 fill-current" aria-hidden="true"></i><i data-lucide="star" class="size-5 fill-current" aria-hidden="true"></i><i data-lucide="star" class="size-5 text-line-strong" aria-hidden="true"></i></span>
+      <span class="font-semibold">4,6<span class="sr-only"> az 5-ből</span></span><span class="text-sm text-fg-muted">· 12 értékelés</span>
+    </p>
+    <fieldset>
+      <legend class="text-sm font-medium">Az értékelésed</legend>
+      <div class="mt-1.5 flex gap-1">
+        <label class="cursor-pointer p-0.5"><input type="radio" name="sg-rating" value="1" class="peer sr-only" /><span class="sr-only">1 csillag</span><i data-lucide="star" class="size-6 rounded-sm fill-current text-fg peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus" aria-hidden="true"></i></label><label class="cursor-pointer p-0.5"><input type="radio" name="sg-rating" value="2" class="peer sr-only" /><span class="sr-only">2 csillag</span><i data-lucide="star" class="size-6 rounded-sm fill-current text-fg peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus" aria-hidden="true"></i></label><label class="cursor-pointer p-0.5"><input type="radio" name="sg-rating" value="3" class="peer sr-only" checked /><span class="sr-only">3 csillag</span><i data-lucide="star" class="size-6 rounded-sm fill-current text-fg peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus" aria-hidden="true"></i></label><label class="cursor-pointer p-0.5"><input type="radio" name="sg-rating" value="4" class="peer sr-only" /><span class="sr-only">4 csillag</span><i data-lucide="star" class="size-6 rounded-sm text-line-strong peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus" aria-hidden="true"></i></label><label class="cursor-pointer p-0.5"><input type="radio" name="sg-rating" value="5" class="peer sr-only" /><span class="sr-only">5 csillag</span><i data-lucide="star" class="size-6 rounded-sm text-line-strong peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus" aria-hidden="true"></i></label>
+      </div>
+    </fieldset>
+  </div></div>
+  <p class="mt-4 border-t border-line pt-3 text-sm leading-6 text-fg-muted">Fekete csillag, nem sárga: a minimalista palettában marad, és az üres csillag kerete is eléri a 3:1-et. Az átlag számmal is megjelenik („4,6 az 5-ből”), így a csillagok csak kiegészítik. A bevitel rádiócsoport (fieldset + legend, „1 csillag” … „5 csillag” címkével): nyilakkal is választható, és egyetlen értéket jelent be; a csillagok kitöltését (1-től a választottig) a kliens állapota adja. Értékelést csak a kép vásárlója írhat.</p>
+</div>
+<div class="rounded-lg border border-line p-5">
+  <h3 class="text-sm font-semibold text-fg-muted">Nézetváltó és lapozó</h3>
+  <div class="mt-4"><div class="space-y-6">
+    <nav aria-label="Vezérlőpult nézetei (minta)" class="flex gap-6 border-b border-line text-sm">
+      <a href="?tab=kepeim" aria-current="page" class="-mb-px border-b-2 border-primary pb-2.5 font-medium text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">Saját képeim</a>
+      <a href="?tab=vasarlasaim" class="-mb-px border-b-2 border-transparent pb-2.5 text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">Vásárlásaim</a>
+    </nav>
+    <nav aria-label="Lapozás (minta)" class="flex items-center gap-1 text-sm">
+      <a href="#" class="inline-flex h-9 items-center gap-1 rounded-md px-2.5 hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"><i data-lucide="chevron-left" class="size-4" aria-hidden="true"></i>Előző</a>
+      <a href="#" class="grid size-9 place-items-center rounded-md hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">1</a>
+      <span class="px-1 text-fg-muted" aria-hidden="true">…</span>
+      <a href="#" class="grid size-9 place-items-center rounded-md hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">6</a>
+      <a href="#" class="grid size-9 place-items-center rounded-md hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">7</a>
+      <a href="#" aria-current="page" class="grid size-9 place-items-center rounded-md bg-black font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">8</a>
+      <a role="link" aria-disabled="true" class="inline-flex h-9 items-center gap-1 rounded-md px-2.5 text-fg-muted">Következő<i data-lucide="chevron-right" class="size-4" aria-hidden="true"></i></a>
+    </nav>
+  </div></div>
+  <p class="mt-4 border-t border-line pt-3 text-sm leading-6 text-fg-muted">Az URL-hez kötött nézetváltó hivatkozássor (nav + aria-current="page"), nem ARIA-fülsor – ilyen a vezérlőpult. Oldalon belüli váltáshoz (pl. ellenőrzés: kép vagy hash) a WAI-ARIA fülsor-minta kell: role="tablist" és "tab", aria-controls, role="tabpanel", nyílbillentyűk. Az aktív elemet piros vonal és vastagabb felirat jelöli. A lapozóban az aktuális oldalt fekete háttér és aria-current="page", az elérhetetlen irány href nélküli, aria-disabled hivatkozás (nem fókuszálható, de a képernyőolvasó elérhetetlenként mondja be).</p>
+</div>
+<div class="rounded-lg border border-line p-5">
+  <h3 class="text-sm font-semibold text-fg-muted">Megerősítő párbeszédablak</h3>
+  <div class="mt-4"><dialog open aria-labelledby="sg-dialog-title" aria-describedby="sg-dialog-text" class="static m-0 w-full max-w-md rounded-lg border border-line bg-canvas p-5 text-fg shadow-card">
+    <h4 id="sg-dialog-title" class="text-lg font-semibold">Leveszed a képet a galériából?</h4>
+    <p id="sg-dialog-text" class="mt-2 text-sm leading-6 text-fg-muted">Az „Őszi erdő ködben” nem lesz nyilvános, és ezt később nem tudod visszavonni. Akik már megvették, továbbra is letölthetik.</p>
+    <div class="mt-4 flex justify-end gap-2"><button type="button" class="inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus border border-line-strong bg-canvas text-fg hover:bg-surface ">Mégse</button><button type="button" class="inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus border border-danger bg-canvas text-danger hover:bg-danger-surface "><i data-lucide="eye-off" class="size-4" aria-hidden="true"></i>Levétel</button></div>
+  </dialog></div>
+  <p class="mt-4 border-t border-line pt-3 text-sm leading-6 text-fg-muted">A kliensben natív &lt;dialog&gt; a showModal() hívással: a háttér közben nem érhető el, az Esc bezárja. Megnyitáskor a fókusz a „Mégse” gombra kerül (a biztonságos választásra), bezáráskor visszatér a megnyitó gombra. A kérdés a következményt mondja el (aria-describedby), a gomb felirata az igét ismétli – „Levétel”, nem „OK”.</p>
+</div><div class="xl:col-span-2">
+<div class="rounded-lg border border-line p-5">
+  <h3 class="text-sm font-semibold text-fg-muted">Fejléc és üres állapot</h3>
+  <div class="mt-4"><div class="space-y-6">
+    <div class="flex items-center justify-between gap-4 rounded-lg border border-line px-4 py-3">
+      <span class="text-lg font-semibold tracking-tight">Photo<span class="text-primary">Chain</span></span>
+      <nav aria-label="Fő navigáció (minta)" class="hidden items-center gap-6 text-sm md:flex">
+        <a href="#" aria-current="page" class="border-b-2 border-primary py-1 font-medium text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">Galéria</a><a href="#" class="border-b-2 border-transparent py-1 text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">Ellenőrzés</a><a href="#" class="border-b-2 border-transparent py-1 text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">Vezérlőpult</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <a href="#" class="inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus bg-black text-white hover:bg-neutral-800 min-h-9"><i data-lucide="upload" class="size-4" aria-hidden="true"></i>Feltöltés</a>
+        <button type="button" class="grid size-9 place-items-center rounded-full border border-line-strong text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus" aria-label="FN – fiókmenü" aria-expanded="false">FN</button>
+        <button type="button" class="grid size-9 place-items-center rounded-md border border-line-strong md:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus" aria-label="Menü" aria-expanded="false"><i data-lucide="menu" class="size-5" aria-hidden="true"></i></button>
+      </div>
+    </div>
+    <div class="flex flex-col items-center rounded-lg border border-dashed border-line-strong px-6 py-10 text-center">
+      <i data-lucide="image-off" class="size-8 text-fg-muted" aria-hidden="true"></i>
+      <p class="mt-3 font-medium">Nincs találat</p>
+      <p class="mt-1 text-sm text-fg-muted">Próbálj más keresőszót, vagy töröld a szűrőket.</p>
+      <div class="mt-4"><button type="button" class="inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus border border-line-strong bg-canvas text-fg hover:bg-surface "><i data-lucide="x" class="size-4" aria-hidden="true"></i>Szűrők törlése</button></div>
+    </div>
+  </div></div>
+  <p class="mt-4 border-t border-line pt-3 text-sm leading-6 text-fg-muted">A logó szöveges: a „Chain” piros – ez az egyetlen díszítő piros elem. Az aktív menüpontot piros vonal és aria-current="page" jelöli, nem csak a színe. Mobilon a navigáció a „Menü” gomb mögé kerül; a menü- és a fiókgomb felfedő minta (aria-expanded, aria-controls). Útvonalváltáskor a kliens frissíti az oldal címét, és a fókuszt az új oldal h1-ére teszi (WCAG 2.4.2, 2.4.3). Üres listánál mindig van javaslat a továbblépésre.</p>
+</div></div></div></div>
+</section>
+    </main>
+    <footer class="border-t border-line">
+      <p class="mx-auto max-w-7xl px-4 py-6 text-sm text-fg-muted sm:px-6 lg:px-8">Inter és JetBrains Mono (SIL OFL) · Lucide ikonok (ISC) · Tailwind CSS v4 (MIT)</p>
+    </footer>
+    <script>
+      lucide.createIcons();
+    </script>
+  </body>
+</html>

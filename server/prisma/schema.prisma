@@ -1,0 +1,184 @@
+// PhotoChain – adatmodell (fejlesztési terv, 4. fejezet)
+//
+// - A táblák kisbetűs, többes számú nevet kapnak (@@map); a mezőnevek a TypeScript-kóddal egyeznek.
+// - Az időpontok időzónával tárolódnak (timestamptz), az azonosítók natív PostgreSQL uuid típusúak.
+// - Törlés helyett tiltás (User.isBlocked) és elrejtés (PhotoStatus.HIDDEN, Photo.hiddenBy) van: a
+//   letiltott felhasználó tartalma csak a tiltás idejére tűnik el (L16), a rendelések és a
+//   láncon rögzített képek története megmarad, ezért az idegen kulcsok a hivatkozott rekord törlését
+//   megakadályozzák (onDelete: Restrict).
+// - A szöveges mezők hossza felső korlát; a pontos szabályokat az API Zod-sémái ellenőrzik.
+// - A CHECK megszorításokat (értéktartomány, hash-formátum) a Prisma-séma nem tudja kifejezni: kézzel
+//   írt SQL-ként a migrációban vannak (migrations/…_nullable_session_and_checks), itt „CHECK:”
+//   megjegyzés jelzi őket.
+//
+// Forrás: Prisma ORM v7 dokumentáció – Prisma schema (data model, relations, indexes, generators),
+// https://www.prisma.io/docs/orm/v7 (adaptálva)
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  // Node.js ESM + TypeScript "nodenext": a generált importok .js kiterjesztésűek
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+  // Részleges (feltételes) egyedi index az orders táblán (L14)
+  previewFeatures     = ["partialIndexes"]
+}
+
+// Az adatbázis URL-je a prisma.config.ts-ben van (DATABASE_URL)
+datasource db {
+  provider = "postgresql"
+}
+
+/// Felhasználói szerepkör
+enum Role {
+  USER
+  ADMIN
+}
+
+/// A kép állapota a blokklánc-regisztráció szerint
+enum PhotoStatus {
+  PENDING_CHAIN // feltöltve, a regisztrációs tranzakció még nem erősödött meg
+  REGISTERED // a láncon rögzítve – nyilvánosan listázható
+  CHAIN_FAILED // a regisztráció nem sikerült (újrapróbálható)
+  HIDDEN // elrejtve (a tulajdonos vagy az adminisztrátor) – nem nyilvános; a láncon a rekord megmarad
+}
+
+/// Ki rejtette el a képet (L16). A tulajdonos és az adminisztrátor (moderátori levétel) döntése
+/// független: egyik sem szüntetheti meg a másikét – mindkettőnél OWNER_AND_ADMIN. Az adminisztrátor
+/// csak a saját levételét oldhatja fel; amíg az érvényben van, a vásárló sem töltheti le az eredetit.
+enum HiddenBy {
+  OWNER
+  ADMIN
+  OWNER_AND_ADMIN
+}
+
+/// A rendelés (Stripe-fizetés) állapota
+enum OrderStatus {
+  PENDING // a fizetés elindult
+  PAID // kifizetve – ez jogosít fel az eredeti kép letöltésére
+  EXPIRED // a Stripe-munkamenet lejárt
+  FAILED // a fizetés nem sikerült
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  /// CHECK: csak kisbetűs (az egyediség kis- és nagybetű-érzékeny – L30)
+  email        String   @unique @db.VarChar(254)
+  /// bcrypt-hash – a jelszó maga soha nem kerül az adatbázisba
+  passwordHash String
+  displayName  String   @db.VarChar(50)
+  bio          String?  @db.VarChar(500)
+  role         Role     @default(USER)
+  isBlocked    Boolean  @default(false)
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+
+  photos  Photo[]
+  orders  Order[]
+  reviews Review[]
+
+  @@map("users")
+}
+
+model Category {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique @db.VarChar(50)
+  /// URL-barát azonosító, pl. "etel-es-ital"
+  slug   String  @unique @db.VarChar(60)
+  photos Photo[]
+
+  @@map("categories")
+}
+
+model Photo {
+  id               String      @id @default(uuid()) @db.Uuid
+  ownerId          String      @db.Uuid
+  categoryId       Int
+  title            String      @db.VarChar(120)
+  description      String?     @db.VarChar(2000)
+  /// CHECK: nem negatív
+  priceHuf         Int
+  status           PhotoStatus @default(PENDING_CHAIN)
+  /// SHA-256 tartalom-ujjlenyomat – egyedi: ugyanaz a fájl nem tölthető fel újra.
+  /// CHECK: pontosan 64 kisbetűs hexadecimális karakter (nagybetűvel megkerülhető lenne az egyediség)
+  sha256           String      @unique @db.Char(64)
+  /// Perceptuális hash (dHash) – a módosított másolatok felismeréséhez.
+  /// CHECK: pontosan 16 kisbetűs hexadecimális karakter
+  dHash            String      @db.Char(16)
+  width            Int
+  height           Int
+  /// A fájlok helye a tárhelyen (eredeti, vízjeles előnézet, bélyegkép)
+  originalKey      String      @db.VarChar(255)
+  previewKey       String      @db.VarChar(255)
+  thumbnailKey     String      @db.VarChar(255)
+  /// A regisztrációs tranzakció hash-e – már a küldés előtt mentődik (L11), így újraindítás után is
+  /// lezárható. CHECK: 0x + 64 kisbetűs hexadecimális karakter
+  chainTxHash      String?     @db.Char(66)
+  /// CHECK: nem negatív
+  chainBlockNumber Int?
+  /// CHECK: pozitív
+  gasUsed          BigInt?
+  /// A lánc szerinti regisztrációs idő (a blokk időbélyege). CHECK: REGISTERED állapotban kötelező
+  registeredAt     DateTime?   @db.Timestamptz(3)
+  /// Ki rejtette el (L16). CHECK: HIDDEN állapotban kötelező, másban üres
+  hiddenBy         HiddenBy?
+  createdAt        DateTime    @default(now()) @db.Timestamptz(3)
+
+  owner    User     @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  orders   Order[]
+  reviews  Review[]
+
+  // A PostgreSQL az idegen kulcsokra magától nem készít indexet
+  @@index([ownerId])
+  @@index([categoryId])
+  // Galéria: a regisztrált képek a legújabbtól
+  @@index([status, createdAt])
+  @@map("photos")
+}
+
+model Order {
+  id              String      @id @default(uuid()) @db.Uuid
+  buyerId         String      @db.Uuid
+  photoId         String      @db.Uuid
+  /// CHECK: nem negatív
+  amountHuf       Int
+  status          OrderStatus @default(PENDING)
+  /// A Stripe Checkout munkamenet azonosítója. A rendelés (PENDING) előbb jön létre, mint a
+  /// munkamenet (annak metaadata a rendelés azonosítója), ezért kezdetben üres.
+  stripeSessionId String?     @unique @db.VarChar(255)
+  createdAt       DateTime    @default(now()) @db.Timestamptz(3)
+  paidAt          DateTime?   @db.Timestamptz(3)
+
+  buyer User  @relation(fields: [buyerId], references: [id], onDelete: Restrict)
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Restrict)
+
+  // Egy vevőnek egy képre egyszerre legfeljebb egy élő (függő vagy kifizetett) rendelése lehet –
+  // párhuzamos fizetésindításnál sem jöhet létre kettő (L14). A lezárt (EXPIRED, FAILED) rendelések
+  // nem számítanak, így lejárt fizetés után újra vásárolhat. A feltétel a PostgreSQL által tárolt
+  // (normalizált) alakban szerepel – az IN (…) alakot a Prisma eltérésnek látná, és újra létrehozná.
+  // Forrás: Prisma ORM v7 – Database features (partial indexes),
+  // https://www.prisma.io/docs/orm/v7/reference/database-features (adaptálva)
+  @@unique([buyerId, photoId], map: "orders_buyerId_photoId_live_key", where: raw("status = ANY (ARRAY['PENDING'::\"OrderStatus\", 'PAID'::\"OrderStatus\"])"))
+  // Letöltési jogosultság: van-e a vásárlónak kifizetett rendelése az adott képre
+  @@index([buyerId, photoId])
+  @@index([photoId])
+  @@map("orders")
+}
+
+model Review {
+  id        String   @id @default(uuid()) @db.Uuid
+  photoId   String   @db.Uuid
+  authorId  String   @db.Uuid
+  /// Csillagok száma. CHECK: 1 és 5 között
+  rating    Int      @db.SmallInt
+  comment   String?  @db.VarChar(1000)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  photo  Photo @relation(fields: [photoId], references: [id], onDelete: Restrict)
+  author User  @relation(fields: [authorId], references: [id], onDelete: Restrict)
+
+  // Egy felhasználó egy képet egyszer értékelhet (ez az index a képhez tartozó keresést is gyorsítja)
+  @@unique([photoId, authorId])
+  @@index([authorId])
+  @@map("reviews")
+}

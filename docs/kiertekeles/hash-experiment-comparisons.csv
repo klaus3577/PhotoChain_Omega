@@ -1,0 +1,199 @@
+first_photo,variant_id,variant,second_photo,distance
+01_tocsa_tukrozodes.jpg,original,teljes felbontású eredeti (originals/),02_gyertyak.jpg,25
+01_tocsa_tukrozodes.jpg,resize50,kicsinyítés 50 %,02_gyertyak.jpg,25
+01_tocsa_tukrozodes.jpg,resize25,kicsinyítés 25 %,02_gyertyak.jpg,25
+01_tocsa_tukrozodes.jpg,jpeg60,JPEG-újratömörítés q60,02_gyertyak.jpg,24
+01_tocsa_tukrozodes.jpg,jpeg20,JPEG-újratömörítés q20,02_gyertyak.jpg,24
+01_tocsa_tukrozodes.jpg,webp80,WebP-konverzió q80,02_gyertyak.jpg,25
+01_tocsa_tukrozodes.jpg,brightness110,fényerő +10 %,02_gyertyak.jpg,24
+01_tocsa_tukrozodes.jpg,greyscale,szürkeárnyalat,02_gyertyak.jpg,24
+01_tocsa_tukrozodes.jpg,caption,szöveges felirat (alsó sáv),02_gyertyak.jpg,26
+01_tocsa_tukrozodes.jpg,crop5,vágás 5 % (minden oldalról),02_gyertyak.jpg,20
+01_tocsa_tukrozodes.jpg,crop10,vágás 10 % (minden oldalról),02_gyertyak.jpg,29
+01_tocsa_tukrozodes.jpg,chain_messenger,üzenetküldőn át: 1080 px + JPEG q75,02_gyertyak.jpg,25
+01_tocsa_tukrozodes.jpg,chain_filter,"telefonos szűrő: kontraszt +15 %, telítettség +20 %, vinyetta",02_gyertyak.jpg,23
+01_tocsa_tukrozodes.jpg,chain_share,megosztás: 1200 px + vágás 2 % + JPEG q70,02_gyertyak.jpg,24
+01_tocsa_tukrozodes.jpg,mirror,tükrözés (vízszintes),02_gyertyak.jpg,22
+01_tocsa_tukrozodes.jpg,rotate90,forgatás 90°,02_gyertyak.jpg,29
+01_tocsa_tukrozodes.jpg,crop1,vágás 1 % (minden oldalról),02_gyertyak.jpg,23
+01_tocsa_tukrozodes.jpg,crop2,vágás 2 % (minden oldalról),02_gyertyak.jpg,26
+01_tocsa_tukrozodes.jpg,crop3,vágás 3 % (minden oldalról),02_gyertyak.jpg,22
+01_tocsa_tukrozodes.jpg,crop7,vágás 7 % (minden oldalról),02_gyertyak.jpg,21
+01_tocsa_tukrozodes.jpg,crop_bottom5,vágás 5 % (csak alul),02_gyertyak.jpg,29
+01_tocsa_tukrozodes.jpg,crop_bottom10,vágás 10 % (csak alul),02_gyertyak.jpg,30
+01_tocsa_tukrozodes.jpg,rotate05,"forgatás 0,5° (a sarkok levágva)",02_gyertyak.jpg,24
+01_tocsa_tukrozodes.jpg,rotate1,forgatás 1° (a sarkok levágva),02_gyertyak.jpg,26
+01_tocsa_tukrozodes.jpg,rotate2,forgatás 2° (a sarkok levágva),02_gyertyak.jpg,26
+01_tocsa_tukrozodes.jpg,rotate5,forgatás 5° (a sarkok levágva),02_gyertyak.jpg,23
+01_tocsa_tukrozodes.jpg,preview,a platform vízjeles előnézete,02_gyertyak.jpg,26
+01_tocsa_tukrozodes.jpg,preview_original,a platform előnézete a teljes felbontású eredetiből (az eredetihez mérve),02_gyertyak.jpg,26
+01_tocsa_tukrozodes.jpg,preview_nowm,"előnézet vízjel nélkül (1200 px, kontroll)",02_gyertyak.jpg,25
+01_tocsa_tukrozodes.jpg,preview_wm15,"előnézet, a vízjel átlátszatlansága 0,15",02_gyertyak.jpg,26
+01_tocsa_tukrozodes.jpg,preview_wm25,"előnézet, a vízjel átlátszatlansága 0,25",02_gyertyak.jpg,27
+01_tocsa_tukrozodes.jpg,preview_wm35,"előnézet, a vízjel átlátszatlansága 0,35",02_gyertyak.jpg,26
+01_tocsa_tukrozodes.jpg,preview_wm45,"előnézet, a vízjel átlátszatlansága 0,45 (a platform alapértéke)",02_gyertyak.jpg,26
+01_tocsa_tukrozodes.jpg,original,teljes felbontású eredeti (originals/),03_basszusgitar.jpg,27
+01_tocsa_tukrozodes.jpg,resize50,kicsinyítés 50 %,03_basszusgitar.jpg,27
+01_tocsa_tukrozodes.jpg,resize25,kicsinyítés 25 %,03_basszusgitar.jpg,27
+01_tocsa_tukrozodes.jpg,jpeg60,JPEG-újratömörítés q60,03_basszusgitar.jpg,28
+01_tocsa_tukrozodes.jpg,jpeg20,JPEG-újratömörítés q20,03_basszusgitar.jpg,28
+01_tocsa_tukrozodes.jpg,webp80,WebP-konverzió q80,03_basszusgitar.jpg,29
+01_tocsa_tukrozodes.jpg,brightness110,fényerő +10 %,03_basszusgitar.jpg,28
+01_tocsa_tukrozodes.jpg,greyscale,szürkeárnyalat,03_basszusgitar.jpg,28
+01_tocsa_tukrozodes.jpg,caption,szöveges felirat (alsó sáv),03_basszusgitar.jpg,30
+01_tocsa_tukrozodes.jpg,crop5,vágás 5 % (minden oldalról),03_basszusgitar.jpg,22
+01_tocsa_tukrozodes.jpg,crop10,vágás 10 % (minden oldalról),03_basszusgitar.jpg,25
+01_tocsa_tukrozodes.jpg,chain_messenger,üzenetküldőn át: 1080 px + JPEG q75,03_basszusgitar.jpg,27
+01_tocsa_tukrozodes.jpg,chain_filter,"telefonos szűrő: kontraszt +15 %, telítettség +20 %, vinyetta",03_basszusgitar.jpg,29
+01_tocsa_tukrozodes.jpg,chain_share,megosztás: 1200 px + vágás 2 % + JPEG q70,03_basszusgitar.jpg,24
+01_tocsa_tukrozodes.jpg,mirror,tükrözés (vízszintes),03_basszusgitar.jpg,28
+01_tocsa_tukrozodes.jpg,rotate90,forgatás 90°,03_basszusgitar.jpg,33
+01_tocsa_tukrozodes.jpg,crop1,vágás 1 % (minden oldalról),03_basszusgitar.jpg,27
+01_tocsa_tukrozodes.jpg,crop2,vágás 2 % (minden oldalról),03_basszusgitar.jpg,22
+01_tocsa_tukrozodes.jpg,crop3,vágás 3 % (minden oldalról),03_basszusgitar.jpg,22
+01_tocsa_tukrozodes.jpg,crop7,vágás 7 % (minden oldalról),03_basszusgitar.jpg,21
+01_tocsa_tukrozodes.jpg,crop_bottom5,vágás 5 % (csak alul),03_basszusgitar.jpg,25
+01_tocsa_tukrozodes.jpg,crop_bottom10,vágás 10 % (csak alul),03_basszusgitar.jpg,24
+01_tocsa_tukrozodes.jpg,rotate05,"forgatás 0,5° (a sarkok levágva)",03_basszusgitar.jpg,26
+01_tocsa_tukrozodes.jpg,rotate1,forgatás 1° (a sarkok levágva),03_basszusgitar.jpg,26
+01_tocsa_tukrozodes.jpg,rotate2,forgatás 2° (a sarkok levágva),03_basszusgitar.jpg,26
+01_tocsa_tukrozodes.jpg,rotate5,forgatás 5° (a sarkok levágva),03_basszusgitar.jpg,25
+01_tocsa_tukrozodes.jpg,preview,a platform vízjeles előnézete,03_basszusgitar.jpg,26
+01_tocsa_tukrozodes.jpg,preview_original,a platform előnézete a teljes felbontású eredetiből (az eredetihez mérve),03_basszusgitar.jpg,26
+01_tocsa_tukrozodes.jpg,preview_nowm,"előnézet vízjel nélkül (1200 px, kontroll)",03_basszusgitar.jpg,27
+01_tocsa_tukrozodes.jpg,preview_wm15,"előnézet, a vízjel átlátszatlansága 0,15",03_basszusgitar.jpg,28
+01_tocsa_tukrozodes.jpg,preview_wm25,"előnézet, a vízjel átlátszatlansága 0,25",03_basszusgitar.jpg,27
+01_tocsa_tukrozodes.jpg,preview_wm35,"előnézet, a vízjel átlátszatlansága 0,35",03_basszusgitar.jpg,26
+01_tocsa_tukrozodes.jpg,preview_wm45,"előnézet, a vízjel átlátszatlansága 0,45 (a platform alapértéke)",03_basszusgitar.jpg,26
+02_gyertyak.jpg,original,teljes felbontású eredeti (originals/),01_tocsa_tukrozodes.jpg,24
+02_gyertyak.jpg,resize50,kicsinyítés 50 %,01_tocsa_tukrozodes.jpg,27
+02_gyertyak.jpg,resize25,kicsinyítés 25 %,01_tocsa_tukrozodes.jpg,24
+02_gyertyak.jpg,jpeg60,JPEG-újratömörítés q60,01_tocsa_tukrozodes.jpg,26
+02_gyertyak.jpg,jpeg20,JPEG-újratömörítés q20,01_tocsa_tukrozodes.jpg,24
+02_gyertyak.jpg,webp80,WebP-konverzió q80,01_tocsa_tukrozodes.jpg,25
+02_gyertyak.jpg,brightness110,fényerő +10 %,01_tocsa_tukrozodes.jpg,26
+02_gyertyak.jpg,greyscale,szürkeárnyalat,01_tocsa_tukrozodes.jpg,26
+02_gyertyak.jpg,caption,szöveges felirat (alsó sáv),01_tocsa_tukrozodes.jpg,25
+02_gyertyak.jpg,crop5,vágás 5 % (minden oldalról),01_tocsa_tukrozodes.jpg,28
+02_gyertyak.jpg,crop10,vágás 10 % (minden oldalról),01_tocsa_tukrozodes.jpg,27
+02_gyertyak.jpg,chain_messenger,üzenetküldőn át: 1080 px + JPEG q75,01_tocsa_tukrozodes.jpg,27
+02_gyertyak.jpg,chain_filter,"telefonos szűrő: kontraszt +15 %, telítettség +20 %, vinyetta",01_tocsa_tukrozodes.jpg,20
+02_gyertyak.jpg,chain_share,megosztás: 1200 px + vágás 2 % + JPEG q70,01_tocsa_tukrozodes.jpg,23
+02_gyertyak.jpg,mirror,tükrözés (vízszintes),01_tocsa_tukrozodes.jpg,22
+02_gyertyak.jpg,rotate90,forgatás 90°,01_tocsa_tukrozodes.jpg,23
+02_gyertyak.jpg,crop1,vágás 1 % (minden oldalról),01_tocsa_tukrozodes.jpg,26
+02_gyertyak.jpg,crop2,vágás 2 % (minden oldalról),01_tocsa_tukrozodes.jpg,24
+02_gyertyak.jpg,crop3,vágás 3 % (minden oldalról),01_tocsa_tukrozodes.jpg,23
+02_gyertyak.jpg,crop7,vágás 7 % (minden oldalról),01_tocsa_tukrozodes.jpg,28
+02_gyertyak.jpg,crop_bottom5,vágás 5 % (csak alul),01_tocsa_tukrozodes.jpg,22
+02_gyertyak.jpg,crop_bottom10,vágás 10 % (csak alul),01_tocsa_tukrozodes.jpg,22
+02_gyertyak.jpg,rotate05,"forgatás 0,5° (a sarkok levágva)",01_tocsa_tukrozodes.jpg,23
+02_gyertyak.jpg,rotate1,forgatás 1° (a sarkok levágva),01_tocsa_tukrozodes.jpg,23
+02_gyertyak.jpg,rotate2,forgatás 2° (a sarkok levágva),01_tocsa_tukrozodes.jpg,23
+02_gyertyak.jpg,rotate5,forgatás 5° (a sarkok levágva),01_tocsa_tukrozodes.jpg,21
+02_gyertyak.jpg,preview,a platform vízjeles előnézete,01_tocsa_tukrozodes.jpg,25
+02_gyertyak.jpg,preview_original,a platform előnézete a teljes felbontású eredetiből (az eredetihez mérve),01_tocsa_tukrozodes.jpg,25
+02_gyertyak.jpg,preview_nowm,"előnézet vízjel nélkül (1200 px, kontroll)",01_tocsa_tukrozodes.jpg,27
+02_gyertyak.jpg,preview_wm15,"előnézet, a vízjel átlátszatlansága 0,15",01_tocsa_tukrozodes.jpg,26
+02_gyertyak.jpg,preview_wm25,"előnézet, a vízjel átlátszatlansága 0,25",01_tocsa_tukrozodes.jpg,26
+02_gyertyak.jpg,preview_wm35,"előnézet, a vízjel átlátszatlansága 0,35",01_tocsa_tukrozodes.jpg,26
+02_gyertyak.jpg,preview_wm45,"előnézet, a vízjel átlátszatlansága 0,45 (a platform alapértéke)",01_tocsa_tukrozodes.jpg,25
+02_gyertyak.jpg,original,teljes felbontású eredeti (originals/),03_basszusgitar.jpg,31
+02_gyertyak.jpg,resize50,kicsinyítés 50 %,03_basszusgitar.jpg,30
+02_gyertyak.jpg,resize25,kicsinyítés 25 %,03_basszusgitar.jpg,31
+02_gyertyak.jpg,jpeg60,JPEG-újratömörítés q60,03_basszusgitar.jpg,31
+02_gyertyak.jpg,jpeg20,JPEG-újratömörítés q20,03_basszusgitar.jpg,31
+02_gyertyak.jpg,webp80,WebP-konverzió q80,03_basszusgitar.jpg,30
+02_gyertyak.jpg,brightness110,fényerő +10 %,03_basszusgitar.jpg,29
+02_gyertyak.jpg,greyscale,szürkeárnyalat,03_basszusgitar.jpg,33
+02_gyertyak.jpg,caption,szöveges felirat (alsó sáv),03_basszusgitar.jpg,30
+02_gyertyak.jpg,crop5,vágás 5 % (minden oldalról),03_basszusgitar.jpg,27
+02_gyertyak.jpg,crop10,vágás 10 % (minden oldalról),03_basszusgitar.jpg,34
+02_gyertyak.jpg,chain_messenger,üzenetküldőn át: 1080 px + JPEG q75,03_basszusgitar.jpg,30
+02_gyertyak.jpg,chain_filter,"telefonos szűrő: kontraszt +15 %, telítettség +20 %, vinyetta",03_basszusgitar.jpg,33
+02_gyertyak.jpg,chain_share,megosztás: 1200 px + vágás 2 % + JPEG q70,03_basszusgitar.jpg,30
+02_gyertyak.jpg,mirror,tükrözés (vízszintes),03_basszusgitar.jpg,31
+02_gyertyak.jpg,rotate90,forgatás 90°,03_basszusgitar.jpg,30
+02_gyertyak.jpg,crop1,vágás 1 % (minden oldalról),03_basszusgitar.jpg,29
+02_gyertyak.jpg,crop2,vágás 2 % (minden oldalról),03_basszusgitar.jpg,29
+02_gyertyak.jpg,crop3,vágás 3 % (minden oldalról),03_basszusgitar.jpg,30
+02_gyertyak.jpg,crop7,vágás 7 % (minden oldalról),03_basszusgitar.jpg,29
+02_gyertyak.jpg,crop_bottom5,vágás 5 % (csak alul),03_basszusgitar.jpg,33
+02_gyertyak.jpg,crop_bottom10,vágás 10 % (csak alul),03_basszusgitar.jpg,33
+02_gyertyak.jpg,rotate05,"forgatás 0,5° (a sarkok levágva)",03_basszusgitar.jpg,30
+02_gyertyak.jpg,rotate1,forgatás 1° (a sarkok levágva),03_basszusgitar.jpg,30
+02_gyertyak.jpg,rotate2,forgatás 2° (a sarkok levágva),03_basszusgitar.jpg,34
+02_gyertyak.jpg,rotate5,forgatás 5° (a sarkok levágva),03_basszusgitar.jpg,32
+02_gyertyak.jpg,preview,a platform vízjeles előnézete,03_basszusgitar.jpg,30
+02_gyertyak.jpg,preview_original,a platform előnézete a teljes felbontású eredetiből (az eredetihez mérve),03_basszusgitar.jpg,30
+02_gyertyak.jpg,preview_nowm,"előnézet vízjel nélkül (1200 px, kontroll)",03_basszusgitar.jpg,30
+02_gyertyak.jpg,preview_wm15,"előnézet, a vízjel átlátszatlansága 0,15",03_basszusgitar.jpg,31
+02_gyertyak.jpg,preview_wm25,"előnézet, a vízjel átlátszatlansága 0,25",03_basszusgitar.jpg,31
+02_gyertyak.jpg,preview_wm35,"előnézet, a vízjel átlátszatlansága 0,35",03_basszusgitar.jpg,31
+02_gyertyak.jpg,preview_wm45,"előnézet, a vízjel átlátszatlansága 0,45 (a platform alapértéke)",03_basszusgitar.jpg,30
+03_basszusgitar.jpg,original,teljes felbontású eredeti (originals/),01_tocsa_tukrozodes.jpg,28
+03_basszusgitar.jpg,resize50,kicsinyítés 50 %,01_tocsa_tukrozodes.jpg,29
+03_basszusgitar.jpg,resize25,kicsinyítés 25 %,01_tocsa_tukrozodes.jpg,29
+03_basszusgitar.jpg,jpeg60,JPEG-újratömörítés q60,01_tocsa_tukrozodes.jpg,28
+03_basszusgitar.jpg,jpeg20,JPEG-újratömörítés q20,01_tocsa_tukrozodes.jpg,29
+03_basszusgitar.jpg,webp80,WebP-konverzió q80,01_tocsa_tukrozodes.jpg,28
+03_basszusgitar.jpg,brightness110,fényerő +10 %,01_tocsa_tukrozodes.jpg,29
+03_basszusgitar.jpg,greyscale,szürkeárnyalat,01_tocsa_tukrozodes.jpg,28
+03_basszusgitar.jpg,caption,szöveges felirat (alsó sáv),01_tocsa_tukrozodes.jpg,29
+03_basszusgitar.jpg,crop5,vágás 5 % (minden oldalról),01_tocsa_tukrozodes.jpg,23
+03_basszusgitar.jpg,crop10,vágás 10 % (minden oldalról),01_tocsa_tukrozodes.jpg,23
+03_basszusgitar.jpg,chain_messenger,üzenetküldőn át: 1080 px + JPEG q75,01_tocsa_tukrozodes.jpg,28
+03_basszusgitar.jpg,chain_filter,"telefonos szűrő: kontraszt +15 %, telítettség +20 %, vinyetta",01_tocsa_tukrozodes.jpg,26
+03_basszusgitar.jpg,chain_share,megosztás: 1200 px + vágás 2 % + JPEG q70,01_tocsa_tukrozodes.jpg,27
+03_basszusgitar.jpg,mirror,tükrözés (vízszintes),01_tocsa_tukrozodes.jpg,26
+03_basszusgitar.jpg,rotate90,forgatás 90°,01_tocsa_tukrozodes.jpg,27
+03_basszusgitar.jpg,crop1,vágás 1 % (minden oldalról),01_tocsa_tukrozodes.jpg,26
+03_basszusgitar.jpg,crop2,vágás 2 % (minden oldalról),01_tocsa_tukrozodes.jpg,26
+03_basszusgitar.jpg,crop3,vágás 3 % (minden oldalról),01_tocsa_tukrozodes.jpg,23
+03_basszusgitar.jpg,crop7,vágás 7 % (minden oldalról),01_tocsa_tukrozodes.jpg,23
+03_basszusgitar.jpg,crop_bottom5,vágás 5 % (csak alul),01_tocsa_tukrozodes.jpg,29
+03_basszusgitar.jpg,crop_bottom10,vágás 10 % (csak alul),01_tocsa_tukrozodes.jpg,26
+03_basszusgitar.jpg,rotate05,"forgatás 0,5° (a sarkok levágva)",01_tocsa_tukrozodes.jpg,28
+03_basszusgitar.jpg,rotate1,forgatás 1° (a sarkok levágva),01_tocsa_tukrozodes.jpg,29
+03_basszusgitar.jpg,rotate2,forgatás 2° (a sarkok levágva),01_tocsa_tukrozodes.jpg,28
+03_basszusgitar.jpg,rotate5,forgatás 5° (a sarkok levágva),01_tocsa_tukrozodes.jpg,27
+03_basszusgitar.jpg,preview,a platform vízjeles előnézete,01_tocsa_tukrozodes.jpg,28
+03_basszusgitar.jpg,preview_original,a platform előnézete a teljes felbontású eredetiből (az eredetihez mérve),01_tocsa_tukrozodes.jpg,27
+03_basszusgitar.jpg,preview_nowm,"előnézet vízjel nélkül (1200 px, kontroll)",01_tocsa_tukrozodes.jpg,29
+03_basszusgitar.jpg,preview_wm15,"előnézet, a vízjel átlátszatlansága 0,15",01_tocsa_tukrozodes.jpg,28
+03_basszusgitar.jpg,preview_wm25,"előnézet, a vízjel átlátszatlansága 0,25",01_tocsa_tukrozodes.jpg,29
+03_basszusgitar.jpg,preview_wm35,"előnézet, a vízjel átlátszatlansága 0,35",01_tocsa_tukrozodes.jpg,27
+03_basszusgitar.jpg,preview_wm45,"előnézet, a vízjel átlátszatlansága 0,45 (a platform alapértéke)",01_tocsa_tukrozodes.jpg,28
+03_basszusgitar.jpg,original,teljes felbontású eredeti (originals/),02_gyertyak.jpg,31
+03_basszusgitar.jpg,resize50,kicsinyítés 50 %,02_gyertyak.jpg,30
+03_basszusgitar.jpg,resize25,kicsinyítés 25 %,02_gyertyak.jpg,30
+03_basszusgitar.jpg,jpeg60,JPEG-újratömörítés q60,02_gyertyak.jpg,31
+03_basszusgitar.jpg,jpeg20,JPEG-újratömörítés q20,02_gyertyak.jpg,30
+03_basszusgitar.jpg,webp80,WebP-konverzió q80,02_gyertyak.jpg,31
+03_basszusgitar.jpg,brightness110,fényerő +10 %,02_gyertyak.jpg,30
+03_basszusgitar.jpg,greyscale,szürkeárnyalat,02_gyertyak.jpg,31
+03_basszusgitar.jpg,caption,szöveges felirat (alsó sáv),02_gyertyak.jpg,32
+03_basszusgitar.jpg,crop5,vágás 5 % (minden oldalról),02_gyertyak.jpg,30
+03_basszusgitar.jpg,crop10,vágás 10 % (minden oldalról),02_gyertyak.jpg,30
+03_basszusgitar.jpg,chain_messenger,üzenetküldőn át: 1080 px + JPEG q75,02_gyertyak.jpg,31
+03_basszusgitar.jpg,chain_filter,"telefonos szűrő: kontraszt +15 %, telítettség +20 %, vinyetta",02_gyertyak.jpg,27
+03_basszusgitar.jpg,chain_share,megosztás: 1200 px + vágás 2 % + JPEG q70,02_gyertyak.jpg,32
+03_basszusgitar.jpg,mirror,tükrözés (vízszintes),02_gyertyak.jpg,33
+03_basszusgitar.jpg,rotate90,forgatás 90°,02_gyertyak.jpg,38
+03_basszusgitar.jpg,crop1,vágás 1 % (minden oldalról),02_gyertyak.jpg,31
+03_basszusgitar.jpg,crop2,vágás 2 % (minden oldalról),02_gyertyak.jpg,33
+03_basszusgitar.jpg,crop3,vágás 3 % (minden oldalról),02_gyertyak.jpg,34
+03_basszusgitar.jpg,crop7,vágás 7 % (minden oldalról),02_gyertyak.jpg,30
+03_basszusgitar.jpg,crop_bottom5,vágás 5 % (csak alul),02_gyertyak.jpg,32
+03_basszusgitar.jpg,crop_bottom10,vágás 10 % (csak alul),02_gyertyak.jpg,29
+03_basszusgitar.jpg,rotate05,"forgatás 0,5° (a sarkok levágva)",02_gyertyak.jpg,29
+03_basszusgitar.jpg,rotate1,forgatás 1° (a sarkok levágva),02_gyertyak.jpg,28
+03_basszusgitar.jpg,rotate2,forgatás 2° (a sarkok levágva),02_gyertyak.jpg,29
+03_basszusgitar.jpg,rotate5,forgatás 5° (a sarkok levágva),02_gyertyak.jpg,26
+03_basszusgitar.jpg,preview,a platform vízjeles előnézete,02_gyertyak.jpg,31
+03_basszusgitar.jpg,preview_original,a platform előnézete a teljes felbontású eredetiből (az eredetihez mérve),02_gyertyak.jpg,32
+03_basszusgitar.jpg,preview_nowm,"előnézet vízjel nélkül (1200 px, kontroll)",02_gyertyak.jpg,30
+03_basszusgitar.jpg,preview_wm15,"előnézet, a vízjel átlátszatlansága 0,15",02_gyertyak.jpg,31
+03_basszusgitar.jpg,preview_wm25,"előnézet, a vízjel átlátszatlansága 0,25",02_gyertyak.jpg,30
+03_basszusgitar.jpg,preview_wm35,"előnézet, a vízjel átlátszatlansága 0,35",02_gyertyak.jpg,32
+03_basszusgitar.jpg,preview_wm45,"előnézet, a vízjel átlátszatlansága 0,45 (a platform alapértéke)",02_gyertyak.jpg,31

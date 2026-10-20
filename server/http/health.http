@@ -1,0 +1,16 @@
+# REST Client (VS Code) kérések – a sor fölötti „Send Request” linkkel küldhetők el.
+# A szerver: npm run dev (server/ mappában)
+
+@baseUrl = http://localhost:4000/api
+
+### Állapotellenőrzés – várt válasz: 200, {"data":{"status":"ok"}}
+GET {{baseUrl}}/health
+
+### Ismeretlen útvonal – várt válasz: 404, NOT_FOUND
+GET {{baseUrl}}/nincs-ilyen
+
+### Hibás JSON-törzs – várt válasz: 400, INVALID_JSON
+POST {{baseUrl}}/health
+Content-Type: application/json
+
+{"hiányos":

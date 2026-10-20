@@ -1,0 +1,66 @@
+# ============================================================
+# PhotoChain – a git által figyelmen kívül hagyott fájlok
+# ============================================================
+
+# --- Környezeti változók és titkos kulcsok (SOHA ne kerüljenek a repóba!) ---
+.env
+.env.*
+!.env.example
+# Az éles változók mintája (csak nevek, értékek nélkül – L32)
+!.env.production.example
+*.pem
+*.key
+*.p12
+*.keystore
+
+# --- Függőségek ---
+node_modules/
+
+# --- Build kimenetek ---
+dist/
+build/
+*.tsbuildinfo
+*.local
+
+# --- Tesztek és lefedettség ---
+coverage/
+coverage.json
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# --- Hardhat (blockchain/) – generált fájlok ---
+blockchain/artifacts/
+blockchain/cache/
+blockchain/typechain-types/
+blockchain/types/
+# A lokális (31337-es) hálózat deploy-adatai nem kellenek;
+# a Sepolia-deploy naplóját (chain-11155111) viszont verziózzuk.
+blockchain/ignition/deployments/chain-31337/
+
+# --- Prisma (server/) – generált kliens ---
+server/src/generated/
+
+# --- Feltöltött képek (helyi tárhely) ---
+uploads/
+
+# --- A tesztfotók eredeti, nagy felbontású példányai ---
+# A repóba csak a kicsinyített, metaadat nélküli változat kerül (server/scripts/prepare-test-photo.ts)
+server/tests/fixtures/images/originals/
+
+# --- Naplók ---
+logs/
+*.log
+npm-debug.log*
+
+# --- Operációs rendszer ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Szerkesztők és eszközök ---
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json

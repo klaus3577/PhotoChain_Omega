@@ -1,0 +1,148 @@
+# REST Client (VS Code) kérések – képfeltöltés és duplikáció-szűrés (L10), galéria, adatlap,
+# módosítás és elrejtés (L13), az eredeti letöltése (L14), sorban fentről lefelé.
+# A szerver: npm run dev (server/ mappában). Előtte az auth.http 1. kérésével regisztráld a
+# próbafiókot. A feltöltött kép a saját tesztfotók egyike (tests/fixtures/images/).
+
+@host = http://localhost:4000
+@baseUrl = {{host}}/api
+# Próbafiók a helyi fejlesztői adatbázisban – kitalált adatok, nem valódi jelszó
+@email = proba.peter@photochain.test
+@password = helyi-proba-jelszo
+# Egy létező kategória azonosítója (a seed 8 kategóriát hoz létre; megnézhető: npm run db:studio)
+@categoryId = 1
+
+### 1. Bejelentkezés – várt válasz: 200 + Set-Cookie (a REST Client a sütit megjegyzi)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### 2. Képfeltöltés (multipart/form-data) – várt válasz: 201, a kép adatai PENDING_CHAIN állapotban,
+### a két ujjlenyomattal (sha256, dHash) és a nyilvános előnézet, illetve bélyegkép URL-jével.
+### MÁSODSZORRA elküldve: 409, DUPLICATE_EXACT – a válaszban az eredeti feltöltés adataival.
+# @name upload
+POST {{baseUrl}}/photos
+Content-Type: multipart/form-data; boundary=PhotoChainHatar
+
+--PhotoChainHatar
+Content-Disposition: form-data; name="title"
+
+Tócsa tükröződéssel
+--PhotoChainHatar
+Content-Disposition: form-data; name="description"
+
+Eső után az udvaron
+--PhotoChainHatar
+Content-Disposition: form-data; name="priceHuf"
+
+2500
+--PhotoChainHatar
+Content-Disposition: form-data; name="categoryId"
+
+{{categoryId}}
+--PhotoChainHatar
+Content-Disposition: form-data; name="image"; filename="01_tocsa_tukrozodes.jpg"
+Content-Type: image/jpeg
+
+< ../tests/fixtures/images/01_tocsa_tukrozodes.jpg
+--PhotoChainHatar--
+
+### 3. A vízjeles előnézet letöltése – várt válasz: 200, image/jpeg (a 2. kérés sikeres válasza után)
+GET {{host}}{{upload.response.body.data.photo.previewUrl}}
+
+### 4. Az eredeti kép nem érhető el URL-en – várt válasz: 404
+GET {{host}}/media/originals/{{upload.response.body.data.photo.id}}.jpg
+
+### 5. Nem kép, .jpg néven – várt válasz: 415, UNSUPPORTED_IMAGE (a típust a tartalom dönti el)
+POST {{baseUrl}}/photos
+Content-Type: multipart/form-data; boundary=PhotoChainHatar
+
+--PhotoChainHatar
+Content-Disposition: form-data; name="title"
+
+Ez nem kép
+--PhotoChainHatar
+Content-Disposition: form-data; name="priceHuf"
+
+1000
+--PhotoChainHatar
+Content-Disposition: form-data; name="categoryId"
+
+{{categoryId}}
+--PhotoChainHatar
+Content-Disposition: form-data; name="image"; filename="kep.jpg"
+Content-Type: image/jpeg
+
+Ez egy szövegfájl, amelyet valaki .jpg-re nevezett át.
+--PhotoChainHatar--
+
+### 6. Hibás mezők, fájl nélkül – várt válasz: 400, VALIDATION_ERROR, mezőnkénti részletekkel
+POST {{baseUrl}}/photos
+Content-Type: multipart/form-data; boundary=PhotoChainHatar
+
+--PhotoChainHatar
+Content-Disposition: form-data; name="title"
+
+x
+--PhotoChainHatar
+Content-Disposition: form-data; name="priceHuf"
+
+-5
+--PhotoChainHatar--
+
+### 7. Kategóriák (L13) – várt válasz: 200, név szerint rendezve (id, name, slug)
+GET {{baseUrl}}/categories
+
+### 8. Galéria – várt válasz: 200, csak a regisztrált (REGISTERED) képek, a legújabb elöl; a meta
+### objektumban a lapozás adatai (page, pageSize, total, totalPages). A 2. kérésben feltöltött kép a
+### lánc-regisztráció után jelenik meg.
+GET {{baseUrl}}/photos
+
+### 9. Keresés, szűrés, rendezés, lapozás – kis- és nagybetűtől független részszöveg a címben, a
+### leírásban és a fotós nevében; ár szerint növekvő sorrend, oldalanként 5 kép
+GET {{baseUrl}}/photos?q=tócsa&categoryId={{categoryId}}&minPrice=1000&maxPrice=5000&sort=price_asc&page=1&pageSize=5
+
+### 10. Hibás query – várt válasz: 400, VALIDATION_ERROR mezőnkénti részletekkel (pageSize ≤ 50,
+### ismeretlen rendezés). A minimális és a maximális árat a szerver csak akkor veti össze, ha a
+### paraméterek egyenként hibátlanok (lásd a következő kérést).
+GET {{baseUrl}}/photos?pageSize=500&sort=random
+
+### 10/b. A minimális ár nagyobb a maximálisnál – várt válasz: 400, VALIDATION_ERROR (minPrice)
+GET {{baseUrl}}/photos?minPrice=5000&maxPrice=1000
+
+### 11. Adatlap – várt válasz: 200; a regisztrált képnél a tanúsítvánnyal (certificate: registeredAt,
+### blockNumber, txHash, txUrl – Sepolián Etherscan-link). A még nem regisztrált képet csak a
+### tulajdonos és az admin látja; a bejelentkezett nézőnek szóló válasz Cache-Control: no-store.
+GET {{baseUrl}}/photos/{{upload.response.body.data.photo.id}}
+
+### 12. Módosítás – várt válasz: 200, az új adatlap. Csak a cím, a leírás (null: törlés), az ár és a
+### kategória módosítható; idegen nyilvános kép: 403, idegen nem nyilvános kép: 404.
+PATCH {{baseUrl}}/photos/{{upload.response.body.data.photo.id}}
+Content-Type: application/json
+
+{
+  "title": "Tócsa tükröződéssel (javított cím)",
+  "description": null,
+  "priceHuf": 3000
+}
+
+### 13. A kép nem cserélhető – várt válasz: 400, VALIDATION_ERROR („ismeretlen mező: sha256”)
+PATCH {{baseUrl}}/photos/{{upload.response.body.data.photo.id}}
+Content-Type: application/json
+
+{
+  "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+}
+
+### 14. Elrejtés – várt válasz: 204. A kép eltűnik a galériából, a nyilvános előnézete és bélyegképe
+### törlődik (a 3. kérés ezután 404), a láncon a rekord megmarad (verify.http: VERIFIED, a kép adatai
+### nélkül). Ismételve is 204.
+DELETE {{baseUrl}}/photos/{{upload.response.body.data.photo.id}}
+
+### 15. Az eredeti letöltése (L14) – várt válasz: 200, Content-Disposition: attachment (a fájl neve a
+### kép címe). A tulajdonos a saját képét minden állapotban – az elrejtettet is – letöltheti; más
+### felhasználó csak kifizetett rendeléssel (orders.http), egyébként 403 (nyilvános kép) vagy 404.
+GET {{baseUrl}}/photos/{{upload.response.body.data.photo.id}}/download

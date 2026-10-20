@@ -1,0 +1,39 @@
+{
+  "name": "photochain-blockchain",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PhotoChain – PhotoRegistry okosszerződés (Solidity, Hardhat 3)",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "test:gas": "hardhat test --gas-stats",
+    "coverage": "hardhat test --coverage",
+    "typecheck": "tsc --noEmit",
+    "clean": "hardhat clean",
+    "node": "hardhat node",
+    "deploy:local": "hardhat ignition deploy ignition/modules/PhotoRegistry.ts --network localhost",
+    "deploy:sepolia": "hardhat ignition deploy ignition/modules/PhotoRegistry.ts --network sepolia --verify",
+    "export-abi": "hardhat run scripts/export-abi.ts",
+    "check:local": "hardhat run --network localhost scripts/check-deployment.ts",
+    "check:sepolia": "hardhat run --network sepolia scripts/check-deployment.ts"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^4.2.0",
+    "@nomicfoundation/hardhat-ignition": "^3.1.8",
+    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^4.0.0",
+    "@openzeppelin/contracts": "5.6.1",
+    "@types/chai": "^5.2.3",
+    "@types/chai-as-promised": "^8.0.2",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.19.0",
+    "chai": "^6.2.2",
+    "ethers": "^6.17.0",
+    "hardhat": "^3.18.0",
+    "mocha": "^12.0.2",
+    "typescript": "~6.0.3"
+  }
+}

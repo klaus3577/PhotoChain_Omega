@@ -1,0 +1,39 @@
+# Függőségfrissítések (L32): a Dependabot hetente pull requestet nyit, ha a Docker-alapképnek, a
+# GitHub Actions lépéseinek vagy az npm-csomagoknak új (biztonsági) kiadása van; a CI mindegyiken lefut.
+# A nyilvános bemutatópéldányban (PhotoChain_Omega) a verziófrissítések ki vannak kapcsolva
+# (open-pull-requests-limit: 0), hogy a lezárt állapotra ne nyíljanak automatikus pull requestek;
+# a fejlesztői repóban a Dependabot hetente fut.
+# A sharp szándékosan pontos verzióra rögzített (L09): a dHash a láncra kerül, egy frissítés
+# megváltoztathatná – csak kézzel, a golden-vector teszttel együtt frissíthető.
+# Forrás: GitHub Docs – Configuration options for the dependabot.yml file,
+# https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference
+# (adaptálva)
+version: 2
+updates:
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+  - package-ecosystem: npm
+    directories:
+      - /
+      - /server
+      - /client
+      - /blockchain
+      - /e2e
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+    ignore:
+      - dependency-name: sharp

@@ -1,0 +1,34 @@
+{
+  "name": "photochain",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PhotoChain – blokklánc-alapú hitelesítéssel működő fotó-marketplace (szakdolgozati prototípus)",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "install:all": "npm install && npm install --prefix blockchain && npm install --prefix server && npm install --prefix client && npm install --prefix e2e",
+    "dev": "concurrently --names server,client --prefix-colors blue,magenta \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "build": "npm run build --prefix server && npm run build --prefix client",
+    "test": "npm run design:test && npm run test --prefix blockchain && npm run test --prefix server && npm run test --prefix client",
+    "test:e2e": "npm test --prefix e2e",
+    "docker:up": "docker compose --profile app up -d --build",
+    "docker:down": "docker compose --profile app down",
+    "docker:logs": "docker compose --profile app logs -f app",
+    "coverage": "npm run coverage --prefix server && npm run coverage --prefix client",
+    "typecheck": "npm run typecheck --prefix blockchain && npm run typecheck --prefix server && npm run typecheck --prefix client && npm run typecheck --prefix e2e",
+    "check": "npm run format:check && npm run lint && npm run design:test && npm run test --prefix blockchain && npm run typecheck && npm run coverage",
+    "design:test": "node --test \"tools/design/*.test.mjs\"",
+    "design:check": "node tools/design/contrast.mjs",
+    "design:styleguide": "node tools/design/styleguide.mjs",
+    "lint": "npm run lint --prefix server && npm run lint --prefix client",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5",
+    "prettier": "3.9.9"
+  }
+}

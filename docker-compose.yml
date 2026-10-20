@@ -1,0 +1,107 @@
+# PhotoChain – Docker Compose: a fejlesztői adatbázis (PostgreSQL 17) és – az `app` profillal – a
+# teljes rendszer konténerben (L31).
+#
+# Csak az adatbázis (napi fejlesztéshez, `npm run dev` mellé):
+#   docker compose up -d
+# A teljes rendszer (adatbázis + migráció + alkalmazás a http://localhost:4000 címen):
+#   docker compose --profile app up -d --build        (vagy: npm run docker:up)
+# Állapot:   docker compose --profile app ps
+# Leállítás: docker compose --profile app down        (az adatok a pgdata volume-ban megmaradnak;
+#                                                      a `down -v` a volume-ot, vagyis az adatbázist
+#                                                      is törli!)
+#
+# A hozzáférési adatok a gyökérben lévő .env fájlból jönnek (sablon: .env.example) – a Compose ezt
+# automatikusan beolvassa. Az alkalmazás a többi beállítást (lánc, Stripe, JWT) a server/.env-ből
+# kapja; az adatbázis címét, a kliens címét és az éles módot itt írjuk felül. A feltöltött képek a
+# fejlesztéssel közös server/uploads mappába kerülnek (ugyanaz az adatbázis, ugyanazok a képek).
+# Figyelem: a server/.env lánc-beállításával feltöltéskor valódi (Sepolia) tranzakció megy ki.
+#
+# Források: Docker Hub – postgres hivatalos kép, https://hub.docker.com/_/postgres;
+# Compose file reference (profiles, depends_on, env_file, mem_limit, init),
+# https://docs.docker.com/reference/compose-file/ (adaptálva)
+name: photochain
+
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?a POSTGRES_USER nincs beállítva a .env fájlban (lásd .env.example)}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?a POSTGRES_PASSWORD nincs beállítva a .env fájlban (lásd .env.example)}
+      POSTGRES_DB: ${POSTGRES_DB:-photochain}
+    ports:
+      # Csak a saját gépről érhető el (127.0.0.1), a helyi hálózatról nem
+      - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # A „$$” a Compose-nak szól: a változót a konténer shellje helyettesíti be
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Az adatbázis-migrációk (prisma migrate deploy) egyszeri futtatása az alkalmazás előtt – a
+  # build-szakasz képével, így a futtatóképbe nem kell a Prisma parancssori eszköze
+  migrate:
+    profiles: [app]
+    build:
+      context: .
+      target: server-build
+    image: photochain-migrate
+    command: ['npx', 'prisma', 'migrate', 'deploy']
+    # Nem root felhasználóként, jogosultságok nélkül: a build-kép a fejlesztői függőségeket is tartalmazza
+    user: node
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-photochain}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: 'no'
+
+  # Az alkalmazás: az API és a webes felület ugyanarról az eredetről (L31)
+  app:
+    profiles: [app]
+    build:
+      context: .
+      target: runtime
+    image: photochain-app
+    # Kis init-folyamat (tini) a PID 1 helyén: továbbítja a leállítási jelet, begyűjti a gyermekeket
+    init: true
+    restart: unless-stopped
+    env_file:
+      - ./server/.env
+    environment:
+      NODE_ENV: production
+      PORT: '4000'
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-photochain}
+      APP_BASE_URL: http://localhost:${APP_PORT:-4000}
+      UPLOAD_DIR: /app/uploads
+      CLIENT_DIST_DIR: /app/client
+      # Nincs fordított proxy előtte: az X-Forwarded-For fejlécben nem bízunk (L31)
+      TRUST_PROXY_HOPS: '0'
+    ports:
+      # Csak a saját gépről érhető el (127.0.0.1), a helyi hálózatról nem
+      - '127.0.0.1:${APP_PORT:-4000}:4000'
+    volumes:
+      - ./server/uploads:/app/uploads
+    # Egy 50 megapixeles kép feldolgozása kb. 360–390 MB memóriát kér (L12)
+    mem_limit: 2g
+    pids_limit: 256
+    # A Node a 4000-es (nem kiemelt) porton figyel: semmilyen Linux-jogosultság nem kell neki, és a
+    # setuid programokkal (su, passwd…) sem szerezhet újat
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    # Leállításkor a szerver a folyamatban lévő kéréseket és lánc-regisztrációkat (legfeljebb 10 s)
+    # még megvárja – a Docker alapértelmezett 10 másodperce után már erőszakkal állítaná le
+    stop_grace_period: 30s
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  pgdata:

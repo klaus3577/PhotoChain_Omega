@@ -1,0 +1,33 @@
+/*
+ * A kliens stíluslapja: Tailwind CSS v4 (Vite-plugin) a PhotoChain témájával (theme.css, L17).
+ * Alapstílusok: a törzs színei és betűje, valamint jól látható fókuszkeret billentyűzetes
+ * használatkor (WCAG 2.4.7, 2.4.13) minden elemen. Kivétel csak elemenként, kifejezetten adható
+ * (focus:outline-none – az oldal címe és a fő tartalom, ahová a fókusz csak a képernyőolvasó kedvéért
+ * kerül); általános tabindex="-1" szabály nincs, mert az a későbbi menük, fülek keretét is eltüntetné.
+ * A görgetősáv helye állandó (scrollbar-gutter): a betöltődő tartalommal megjelenő sáv nem tolja el a
+ * középre igazított oldalt (elrendezés-ugrás, CLS – L26); a görgetési ráhagyás alul a látható
+ * értesítés sávja: a fókuszba kerülő vagy képernyőre görgetett elem nem kerül az értesítés alá
+ * (WCAG 2.4.11).
+ * Forrás: Tailwind CSS v4 – Installing with Vite, https://tailwindcss.com/docs/installation/using-vite;
+ * Adding custom styles (@layer base), https://tailwindcss.com/docs/adding-custom-styles; MDN –
+ * scrollbar-gutter, https://developer.mozilla.org/en-US/docs/Web/CSS/scrollbar-gutter; MDN –
+ * scroll-padding, https://developer.mozilla.org/en-US/docs/Web/CSS/scroll-padding (adaptálva)
+ */
+@import 'tailwindcss';
+@import './theme.css';
+
+@layer base {
+  html {
+    scrollbar-gutter: stable;
+    scroll-padding-bottom: 6rem;
+  }
+
+  body {
+    @apply bg-canvas font-sans text-fg antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+}

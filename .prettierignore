@@ -1,0 +1,17 @@
+# A Prettier a .gitignore-ban szereplő fájlokat alapból kihagyja; ezek a további kivételek.
+
+# A fejlesztési terv szerkezetét és táblázatait ne formázza át
+docs/FEJLESZTESI_TERV.md
+
+# Zárolt / generált fájlok
+package-lock.json
+**/prisma/migrations/
+# Hardhat Ignition telepítési naplói és a szervernek exportált szerződésadatok (scriptek generálják)
+blockchain/ignition/deployments/
+server/src/contracts/
+# A stílusútmutató: a tools/design/styleguide.mjs generálja a témából, a teszt betűre összeveti
+docs/design/stilusutmutato.html
+
+# A hitelesítés kiértékelésének mérési eredményei: a server/scripts/hash-experiment.ts és gas-cost.ts
+# generálja (CSV, Markdown-táblázatok, HTML-ábrák) – kézzel nem szerkesztjük
+docs/kiertekeles/

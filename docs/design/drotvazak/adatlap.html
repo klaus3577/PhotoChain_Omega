@@ -1,0 +1,482 @@
+<!doctype html>
+<!--
+  PhotoChain – drótváz: Kép adatlapja (L17). Lo-fi, szürkeárnyalatos vázlat: az elrendezést, a tartalmat
+  és a viselkedést mutatja; a végleges színek és komponensek a docs/design/stilusutmutato.html-ben vannak.
+  Önálló fájl (a betűk, a Tailwind és az ikonok CDN-ről), így külön megnyitható és lefényképezhető.
+  Reszponzív: ugyanaz a fájl mobilon (390 px) és asztali nézetben (1440 px).
+-->
+<html lang="hu">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Drótváz – Adatlap · PhotoChain</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@fontsource-variable/inter@5.3.0/index.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@fontsource-variable/jetbrains-mono@5.3.0/index.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@1.53.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+      @theme {
+        --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+        --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+      }
+      /* Képhelyőrző: áthúzott téglalap (a drótvázak szokásos jele) */
+      @utility wf-img {
+        background:
+          linear-gradient(
+            to top right,
+            transparent calc(50% - 1px),
+            var(--color-neutral-300) 50%,
+            transparent calc(50% + 1px)
+          ),
+          linear-gradient(
+            to bottom right,
+            transparent calc(50% - 1px),
+            var(--color-neutral-300) 50%,
+            transparent calc(50% + 1px)
+          ),
+          var(--color-neutral-100);
+      }
+      /* Számozott jegyzetjel: a lap alján lévő azonos számú jegyzetre utal */
+      @utility wf-note {
+        display: inline-grid;
+        flex-shrink: 0;
+        place-items: center;
+        width: 1.375rem;
+        height: 1.375rem;
+        border-radius: 9999px;
+        background: var(--color-neutral-900);
+        color: var(--color-white);
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1;
+      }
+    </style>
+  </head>
+  <body class="bg-white font-sans text-neutral-900 antialiased">
+    <header class="border-b border-neutral-300">
+      <div class="mx-auto flex h-16 max-w-7xl items-center gap-8 px-4 sm:px-6 lg:px-8">
+        <a href="#" class="text-lg font-semibold tracking-tight">PhotoChain</a>
+        <nav aria-label="Fő navigáció" class="hidden h-full items-center gap-6 text-sm md:flex">
+          <a
+            href="#"
+            aria-current="true"
+            class="flex h-full items-center border-b-2 border-neutral-900 font-semibold"
+            >Galéria</a
+          >
+          <a href="#" class="text-neutral-600">Ellenőrzés</a>
+          <a href="#" class="text-neutral-600">Vezérlőpult</a>
+        </nav>
+        <div class="ml-auto flex items-center gap-2">
+          <a
+            href="#"
+            class="hidden h-9 items-center gap-2 rounded-md bg-neutral-900 px-3 text-sm font-medium text-white sm:inline-flex"
+            ><i data-lucide="upload" class="size-4"></i>Feltöltés</a
+          >
+          <button
+            type="button"
+            class="grid size-9 place-items-center rounded-full border border-neutral-400 text-xs font-medium"
+            aria-label="FN – fiókmenü"
+            aria-expanded="false"
+          >
+            FN
+          </button>
+          <button
+            type="button"
+            class="grid size-9 place-items-center rounded-md border border-neutral-300 md:hidden"
+            aria-label="Menü"
+            aria-expanded="false"
+          >
+            <i data-lucide="menu" class="size-5"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+      <nav aria-label="Morzsamenü" class="flex items-center gap-1.5 text-sm text-neutral-600">
+        <a href="#" class="underline underline-offset-2">Galéria</a
+        ><i data-lucide="chevron-right" class="size-4"></i>
+        <a href="#" class="underline underline-offset-2">Tájkép</a
+        ><i data-lucide="chevron-right" class="size-4"></i>
+        <span aria-current="page" class="truncate text-neutral-900">Őszi erdő ködben</span>
+      </nav>
+
+      <div class="mt-5 grid gap-8 lg:grid-cols-[minmax(0,1fr)_24rem]">
+        <div>
+          <div
+            class="wf-img relative grid aspect-[3/2] place-items-center rounded-lg border border-neutral-300"
+          >
+            <b aria-hidden="true" class="wf-note absolute top-3 left-3">1</b>
+            <span class="rounded-md bg-white/80 px-3 py-1.5 text-sm font-medium text-neutral-600"
+              >Vízjeles előnézet · PhotoChain</span
+            >
+          </div>
+
+          <section class="mt-8 hidden lg:block">
+            <h2 class="text-xl font-semibold tracking-tight">Leírás</h2>
+            <p class="mt-2 max-w-prose leading-7 text-neutral-700">
+              Kora reggeli köd a bükkösben, október elején. A fény a fák között szűrődik át; a kép
+              nyers fájlból, minimális utómunkával készült.
+            </p>
+            <dl class="mt-4 flex flex-wrap gap-x-10 gap-y-2 text-sm">
+              <div>
+                <dt class="text-neutral-500">Kategória</dt>
+                <dd>Tájkép</dd>
+              </div>
+              <div>
+                <dt class="text-neutral-500">Feltöltve</dt>
+                <dd>2026. október 4.</dd>
+              </div>
+            </dl>
+          </section>
+        </div>
+
+        <aside class="space-y-6">
+          <div>
+            <h1 class="text-3xl font-semibold tracking-tight">Őszi erdő ködben</h1>
+            <a href="#" class="mt-3 flex items-center gap-3">
+              <span
+                class="grid size-10 place-items-center rounded-full border border-neutral-400 text-xs font-medium"
+                >FN</span
+              >
+              <span class="text-sm"
+                ><span class="block font-medium underline underline-offset-2">Fotós neve</span
+                ><span class="text-neutral-600"
+                  >A fotós képei átlagosan 4,8 · 23 értékelés</span
+                ></span
+              >
+            </a>
+          </div>
+
+          <div class="rounded-lg border border-neutral-300 p-4">
+            <div class="flex items-center gap-2">
+              <b aria-hidden="true" class="wf-note">2</b>
+              <p class="text-3xl font-semibold tabular-nums">12 500 Ft</p>
+            </div>
+            <a
+              href="#"
+              class="mt-4 hidden h-11 w-full items-center justify-center gap-2 rounded-md bg-neutral-900 font-medium text-white lg:flex"
+              ><i data-lucide="shopping-cart" class="size-4"></i>Megveszem</a
+            >
+            <p class="mt-3 flex gap-2 text-sm text-neutral-600">
+              <i data-lucide="lock" class="mt-0.5 size-4 shrink-0"></i>Biztonságos fizetés a Stripe
+              oldalán. Utána az eredeti, vízjel nélküli fájl a Vásárlásaim között letölthető.
+            </p>
+            <div class="mt-4 space-y-2 border-t border-dashed border-neutral-300 pt-3 text-sm">
+              <p class="text-xs font-semibold tracking-wider text-neutral-500 uppercase">
+                Változatok
+              </p>
+              <p class="flex items-center justify-between gap-2">
+                <span class="text-neutral-600">Már megvetted:</span
+                ><span
+                  class="inline-flex h-9 items-center gap-2 rounded-md border border-neutral-400 px-3 font-medium"
+                  ><i data-lucide="download" class="size-4"></i>Eredeti letöltése</span
+                >
+              </p>
+              <p class="flex items-center justify-between gap-2">
+                <span class="text-neutral-600">Saját képed:</span
+                ><span class="inline-flex gap-2"
+                  ><span
+                    class="inline-flex h-9 items-center rounded-md border border-neutral-400 px-3"
+                    >Szerkesztés</span
+                  ><span
+                    class="inline-flex h-9 items-center rounded-md border border-neutral-400 px-3"
+                    >Levétel</span
+                  ></span
+                >
+              </p>
+            </div>
+          </div>
+
+          <section
+            aria-labelledby="tanusitvany"
+            class="overflow-hidden rounded-lg border border-neutral-400"
+          >
+            <header
+              class="flex items-center gap-2 border-b border-neutral-300 bg-neutral-100 px-4 py-3"
+            >
+              <b aria-hidden="true" class="wf-note">3</b
+              ><i data-lucide="shield-check" class="size-5"></i>
+              <h2 id="tanusitvany" class="font-semibold">Hitelesítve a blokkláncon</h2>
+            </header>
+            <dl class="divide-y divide-neutral-200 px-4 text-sm">
+              <div class="flex justify-between gap-4 py-2.5">
+                <dt class="text-neutral-500">Hálózat</dt>
+                <dd>Ethereum Sepolia (teszthálózat)</dd>
+              </div>
+              <div class="flex justify-between gap-4 py-2.5">
+                <dt class="text-neutral-500">Regisztrálva</dt>
+                <dd>2026. 10. 04. 14:32</dd>
+              </div>
+              <div class="flex items-center justify-between gap-4 py-2.5">
+                <dt class="text-neutral-500">SHA-256</dt>
+                <dd class="flex items-center gap-1 font-mono">
+                  0x5a1f9c3e…8b20d47e<i data-lucide="copy" class="size-4 text-neutral-500"></i>
+                </dd>
+              </div>
+              <div class="flex justify-between gap-4 py-2.5">
+                <dt class="text-neutral-500">dHash</dt>
+                <dd class="font-mono">f0e4c8d0b0a09080</dd>
+              </div>
+              <div class="flex items-center justify-between gap-4 py-2.5">
+                <dt class="text-neutral-500">Tranzakció</dt>
+                <dd class="flex items-center gap-1 font-mono underline underline-offset-2">
+                  0x9c4e…1b7a<i data-lucide="external-link" class="size-3.5"></i>
+                </dd>
+              </div>
+            </dl>
+            <p
+              class="flex items-center gap-2 border-t border-neutral-300 bg-neutral-50 px-4 py-3 text-xs text-neutral-600"
+            >
+              <b aria-hidden="true" class="wf-note">4</b>A láncra csak az ujjlenyomat kerül, maga a
+              kép nem.
+              <a href="#" class="whitespace-nowrap underline underline-offset-2">Mit jelent ez?</a>
+            </p>
+          </section>
+        </aside>
+      </div>
+
+      <section class="mt-8 lg:hidden">
+        <h2 class="text-xl font-semibold tracking-tight">Leírás</h2>
+        <p class="mt-2 leading-7 text-neutral-700">
+          Kora reggeli köd a bükkösben, október elején. A fény a fák között szűrődik át; a kép nyers
+          fájlból, minimális utómunkával készült.
+        </p>
+        <dl class="mt-4 flex flex-wrap gap-x-10 gap-y-2 text-sm">
+          <div>
+            <dt class="text-neutral-500">Kategória</dt>
+            <dd>Tájkép</dd>
+          </div>
+          <div>
+            <dt class="text-neutral-500">Feltöltve</dt>
+            <dd>2026. október 4.</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section aria-labelledby="ertekelesek" class="mt-10 border-t border-neutral-300 pt-8">
+        <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          <h2 id="ertekelesek" class="text-xl font-semibold tracking-tight">Értékelések</h2>
+          <p class="inline-flex items-center gap-1.5 text-sm">
+            <span class="inline-flex" aria-hidden="true"
+              ><i data-lucide="star" class="size-4 fill-current"></i
+              ><i data-lucide="star" class="size-4 fill-current"></i
+              ><i data-lucide="star" class="size-4 fill-current"></i
+              ><i data-lucide="star" class="size-4 fill-current"></i
+              ><i data-lucide="star" class="size-4"></i
+            ></span>
+            <strong>4,6<span class="sr-only"> az 5-ből</span></strong
+            ><span class="text-neutral-600">· 12 értékelés</span>
+          </p>
+        </div>
+
+        <div class="mt-6 grid gap-8 lg:grid-cols-[24rem_minmax(0,1fr)]">
+          <form class="h-fit rounded-lg border border-neutral-300 p-4">
+            <fieldset>
+              <legend class="flex items-center gap-2 font-medium">
+                <b aria-hidden="true" class="wf-note">5</b>Az értékelésed
+              </legend>
+              <div class="mt-3 flex gap-1">
+                <label
+                  ><input type="radio" name="ertekeles" value="1" class="peer sr-only" /><span
+                    class="sr-only"
+                    >1 csillag</span
+                  ><i data-lucide="star" class="size-7 fill-current"></i
+                ></label>
+                <label
+                  ><input type="radio" name="ertekeles" value="2" class="peer sr-only" /><span
+                    class="sr-only"
+                    >2 csillag</span
+                  ><i data-lucide="star" class="size-7 fill-current"></i
+                ></label>
+                <label
+                  ><input type="radio" name="ertekeles" value="3" class="peer sr-only" /><span
+                    class="sr-only"
+                    >3 csillag</span
+                  ><i data-lucide="star" class="size-7 fill-current"></i
+                ></label>
+                <label
+                  ><input
+                    type="radio"
+                    name="ertekeles"
+                    value="4"
+                    class="peer sr-only"
+                    checked /><span class="sr-only">4 csillag</span
+                  ><i
+                    data-lucide="star"
+                    class="size-7 fill-current rounded-sm outline-2 outline-offset-2 outline-neutral-900"
+                  ></i
+                ></label>
+                <label
+                  ><input type="radio" name="ertekeles" value="5" class="peer sr-only" /><span
+                    class="sr-only"
+                    >5 csillag</span
+                  ><i data-lucide="star" class="size-7 text-neutral-500"></i
+                ></label>
+              </div>
+            </fieldset>
+            <label class="mt-3 block text-sm font-medium"
+              >Szöveges vélemény (nem kötelező)
+              <textarea
+                rows="3"
+                class="mt-1.5 block w-full rounded-md border border-neutral-400 p-2.5 font-normal"
+              >
+Gyönyörű fények, a nyomtatott változat is remek lett.</textarea>
+            </label>
+            <span
+              class="mt-3 inline-flex h-10 items-center rounded-md bg-neutral-900 px-4 text-sm font-medium text-white"
+              >Értékelés küldése</span
+            >
+          </form>
+
+          <ul class="divide-y divide-neutral-200">
+            <li class="pb-4">
+              <div class="flex items-center justify-between gap-3">
+                <p class="text-sm">
+                  <strong>Vásárló neve</strong>
+                  <span class="text-neutral-500">· 2026. 10. 06.</span>
+                </p>
+                <span class="inline-flex" role="img" aria-label="5 csillag az 5-ből"
+                  ><i data-lucide="star" class="size-4 fill-current"></i
+                  ><i data-lucide="star" class="size-4 fill-current"></i
+                  ><i data-lucide="star" class="size-4 fill-current"></i
+                  ><i data-lucide="star" class="size-4 fill-current"></i
+                  ><i data-lucide="star" class="size-4 fill-current"></i
+                ></span>
+              </div>
+              <p class="mt-1.5 text-sm leading-6 text-neutral-700">
+                Pont ilyen hangulatú képet kerestem a naptárunkhoz. A letöltés azonnal működött.
+              </p>
+            </li>
+            <li class="py-4">
+              <div class="flex items-center justify-between gap-3">
+                <p class="text-sm">
+                  <strong>Te</strong> <span class="text-neutral-500">· 2026. 10. 05.</span>
+                  <button type="button" class="ml-2 text-neutral-600 underline underline-offset-2">
+                    <b aria-hidden="true" class="wf-note mr-1">6</b>Törlés<span class="sr-only"
+                      >: a saját értékelésed</span
+                    >
+                  </button>
+                </p>
+                <span class="inline-flex" role="img" aria-label="4 csillag az 5-ből"
+                  ><i data-lucide="star" class="size-4 fill-current"></i
+                  ><i data-lucide="star" class="size-4 fill-current"></i
+                  ><i data-lucide="star" class="size-4 fill-current"></i
+                  ><i data-lucide="star" class="size-4 fill-current"></i
+                  ><i data-lucide="star" class="size-4"></i
+                ></span>
+              </div>
+              <p class="mt-1.5 text-sm leading-6 text-neutral-700">
+                Szép kép, a felbontása nagy méretű nyomtatáshoz is elég.
+              </p>
+            </li>
+            <li class="pt-4">
+              <a href="#" class="text-sm font-medium underline underline-offset-2"
+                >További értékelések (10)</a
+              >
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <div
+        class="sticky bottom-0 -mx-4 mt-8 flex items-center justify-between gap-4 border-t border-neutral-300 bg-white px-4 py-3 sm:-mx-6 sm:px-6 lg:hidden"
+      >
+        <div class="flex items-center gap-2">
+          <b aria-hidden="true" class="wf-note">7</b
+          ><span class="text-xl font-semibold tabular-nums">12 500 Ft</span>
+        </div>
+        <a
+          href="#"
+          class="inline-flex h-11 items-center gap-2 rounded-md bg-neutral-900 px-5 font-medium text-white"
+          ><i data-lucide="shopping-cart" class="size-4"></i>Megveszem</a
+        >
+      </div>
+    </main>
+
+    <aside class="border-t-2 border-dashed border-neutral-300 bg-neutral-50">
+      <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <p class="text-xs font-semibold tracking-wider text-neutral-500 uppercase">Drótváz · L17</p>
+        <h2 class="mt-1 text-lg font-semibold">Adatlap – jegyzetek</h2>
+        <p class="mt-1 max-w-3xl text-sm text-neutral-600">
+          Lo-fi vázlat: a szürke árnyalatok helyén a végleges felületen a stílusútmutató színei
+          állnak (a sötét gomb piros, a tanúsítvány zöld). [H1]–[H10]: Nielsen heurisztikái.
+        </p>
+        <ol class="mt-5 grid gap-x-10 gap-y-3 text-sm leading-6 md:grid-cols-2">
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">1</b>
+            <p>
+              <strong>Vízjeles, kisebb felbontású előnézet.</strong> Az eredeti fájl csak vásárlás
+              után, bejelentkezve tölthető le – a felület ezt a gomb alatti mondattal előre jelzi. A
+              kép szöveges helyettesítője: „&lt;cím&gt; – vízjeles előnézet” (WCAG 1.1.1).
+              <span class="text-neutral-500">[H2, H5]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">2</b>
+            <p>
+              <strong>Egyetlen elsődleges művelet:</strong> „Megveszem” (piros). Ha a felhasználó
+              már megvette, a helyén „Eredeti letöltése” áll; a saját képénél „Szerkesztés” és
+              „Levétel” (megerősítéssel). A rendszer állapota így mindig egyértelmű. A „már
+              megvetted” állapothoz a nézőre vonatkozó jelző kell: API-bővítés (README).
+              <span class="text-neutral-500">[H1, H4]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">3</b>
+            <p>
+              <strong>Blokklánc-tanúsítvány:</strong> hálózat, időpont, SHA-256 (rövidítve,
+              másolható), dHash, tranzakció (Etherscanen megnyitható). A hitelesség ellenőrizhető,
+              nem csak állított. <span class="text-neutral-500">[H1]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">4</b>
+            <p>
+              <strong>Rövid magyarázat</strong> szakzsargon nélkül; a „Mit jelent ez?” az Ellenőrzés
+              oldal „Hogyan működik?” részére visz. <span class="text-neutral-500">[H2, H10]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">5</b>
+            <p>
+              <strong>Értékelés írása</strong> csak a kép vásárlójának jelenik meg (egy képre
+              egyszer); a többieknek a lista és az átlag. A csillagok rádiócsoport (fieldset +
+              legend, „1 csillag” … „5 csillag” címkével): nyilakkal is választható, és egyetlen
+              értéket jelent be. A beküldés után az új átlagot élő régió mondja be. Hogy a néző
+              írhat-e értékelést, azt is ez a bővítés adja meg (README).
+              <span class="text-neutral-500">[H5]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">6</b>
+            <p>
+              <strong>Saját értékelés törlése</strong> megerősítéssel; az átlag azonnal frissül.
+              <span class="text-neutral-500">[H3]</span>
+            </p>
+          </li>
+          <li class="flex gap-3">
+            <b aria-hidden="true" class="wf-note mt-0.5">7</b>
+            <p>
+              <strong>Mobilon</strong> az ár és a vásárlás gomb alul rögzített sávban marad,
+              hüvelykujjal elérhető; a tanúsítvány a kép és az ár alatt következik. A sáv
+              magasságával azonos görgetési ráhagyás (scroll-padding-bottom) gondoskodik róla, hogy
+              a billentyűzettel fókuszált elemet ne takarja (WCAG 2.4.11).
+              <span class="text-neutral-500">[H7]</span>
+            </p>
+          </li>
+        </ol>
+      </div>
+    </aside>
+
+    <script>
+      lucide.createIcons();
+    </script>
+  </body>
+</html>
