@@ -46,7 +46,7 @@ export interface Order {
   photo: {
     id: string;
     title: string;
-    /** Az elrejtett kép bélyegképe törlődött: null */
+    /** A nem nyilvános kép (rejtett – a fájlja törlődött –, vagy a fotósa letiltva) bélyegképe: null */
     thumbnailUrl: string | null;
     ownerDisplayName: string;
   };

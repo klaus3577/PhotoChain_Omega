@@ -150,8 +150,11 @@ Bejelentkezés után, `multipart/form-data` űrlappal: `image` (a képfájl), `t
 
 1. **Ellenőrzés a fájl tartalma alapján** (nem a neve vagy a kliens által küldött típus szerint):
    csak ép, egyetlen képkockás JPEG, PNG vagy WebP (animált WebP és PNG nem); legfeljebb 15 MB
-   (`UPLOAD_MAX_BYTES`) és 50 megapixel, mindkét oldala legalább 600 képpont; a gyakorlatilag
-   egyszínű képet elutasítja.
+   (`UPLOAD_MAX_BYTES`) és 50 megapixel, mindkét oldala legalább 600 képpont; a túl kevés
+   részletű képet elutasítja (egyszínű, vagy csak egy irányban változó – fényességátmenet, sávok:
+   az ilyen kép dHash-ének sorai csupa 0 vagy csupa 1 bitből állnának, és minden hasonló képpel
+   ütköznének; a szabály: a 9 × 8-as rács legalább 3 sorában legyen legalább 16-os
+   fényességkülönbség úgy, hogy a sor bitjei nem mind egyformák).
 2. **Ujjlenyomatok és duplikáció-szűrés:** azonos SHA-256 → `409 DUPLICATE_EXACT`; legfeljebb
    `DHASH_THRESHOLD` bitnyi dHash-távolság → `409 DUPLICATE_SIMILAR`. A láncot is megkérdezi
    (`isRegistered`, ingyenes olvasás, legfeljebb 5 s): ha a kép ott már szerepel, szintén
@@ -162,7 +165,11 @@ Bejelentkezés után, `multipart/form-data` űrlappal: `image` (a képfájl), `t
    `server/uploads`): az eredeti fájl bájtra változatlanul a privát `originals/` mappába, a
    **vízjeles előnézet** (legfeljebb 1200 képpont) és a **bélyegkép** (400 képpont) a `public/`
    alá kerül – mindkettő metaadatok (EXIF, GPS) nélkül. Csak a `public/` érhető el URL-en
-   (`/media/previews/…`, `/media/thumbnails/…`).
+   (`/media/previews/…`, `/media/thumbnails/…`), és a szerver a fájl kiadása előtt az
+   adatbázisból ellenőrzi a kép láthatóságát: a nyilvános képet bárki, a nem nyilvánosat (még
+   regisztrációra váró, sikertelen vagy letiltott fotósé) csak a tulajdonosa és az admin kapja
+   meg, a rejtett képét – amelyet az elrejtés töröl – senki; másnak 404, ugyanúgy, mint az
+   adatlapnál.
 4. **Adatbázis:** `Photo` rekord `PENDING_CHAIN` állapotban; a válasz (201) ezután azonnal megy,
    a blokklánc-regisztráció a háttérben fut (lásd lent).
 
@@ -178,21 +185,21 @@ minden feltöltés egy, a platform által fizetett lánc-tranzakció, napi keret
 óra feltöltései az adatbázisból): fiókonként `UPLOAD_DAILY_LIMIT` (30), a platformon összesen
 `UPLOAD_GLOBAL_DAILY_LIMIT` (500); fölötte 429 `DAILY_LIMIT_REACHED` (L30).
 
-| Válasz | Hibakód                                 | Mikor                                                     |
-| ------ | --------------------------------------- | --------------------------------------------------------- |
-| 201    | –                                       | sikeres feltöltés; a válaszban a kép adatai és az URL-ek  |
-| 400    | `VALIDATION_ERROR`                      | hiányzó fájl, hibás mező, ismeretlen kategória            |
-| 400    | `IMAGE_TOO_SMALL` / `IMAGE_TOO_LARGE`   | 600 képpontnál kisebb oldal, illetve 50 megapixel fölött  |
-| 400    | `LOW_DETAIL_IMAGE`                      | gyakorlatilag egyszínű kép                                |
-| 400    | `INVALID_UPLOAD`                        | sérült űrlap, több fájl, más mezőnévben küldött fájl      |
-| 401    | `UNAUTHORIZED`                          | nincs bejelentkezve                                       |
-| 403    | `FORBIDDEN`                             | nem a saját oldalról indított kérés (`Sec-Fetch-Site`)    |
-| 409    | `DUPLICATE_EXACT` / `DUPLICATE_SIMILAR` | a kép (vagy módosított másolata) már fel van töltve       |
-| 413    | `PAYLOAD_TOO_LARGE`                     | a fájl nagyobb a megengedettnél                           |
-| 415    | `UNSUPPORTED_IMAGE`                     | nem kép, sérült kép, nem támogatott vagy animált formátum |
-| 415    | `UNSUPPORTED_MEDIA_TYPE`                | a kérés nem `multipart/form-data`                         |
-| 429    | `RATE_LIMITED`                          | túl sok kísérlet, vagy már folyamatban van egy feltöltés  |
-| 503    | `SERVER_BUSY`                           | túl sok egyidejű feltöltés (`Retry-After` fejléccel)      |
+| Válasz | Hibakód                                 | Mikor                                                             |
+| ------ | --------------------------------------- | ----------------------------------------------------------------- |
+| 201    | –                                       | sikeres feltöltés; a válaszban a kép adatai és az URL-ek          |
+| 400    | `VALIDATION_ERROR`                      | hiányzó fájl, hibás mező, ismeretlen kategória                    |
+| 400    | `IMAGE_TOO_SMALL` / `IMAGE_TOO_LARGE`   | 600 képpontnál kisebb oldal, illetve 50 megapixel fölött          |
+| 400    | `LOW_DETAIL_IMAGE`                      | túl kevés részletű (egyszínű, vagy csak egy irányban változó) kép |
+| 400    | `INVALID_UPLOAD`                        | sérült űrlap, több fájl, más mezőnévben küldött fájl              |
+| 401    | `UNAUTHORIZED`                          | nincs bejelentkezve                                               |
+| 403    | `FORBIDDEN`                             | nem a saját oldalról indított kérés (`Sec-Fetch-Site`)            |
+| 409    | `DUPLICATE_EXACT` / `DUPLICATE_SIMILAR` | a kép (vagy módosított másolata) már fel van töltve               |
+| 413    | `PAYLOAD_TOO_LARGE`                     | a fájl nagyobb a megengedettnél                                   |
+| 415    | `UNSUPPORTED_IMAGE`                     | nem kép, sérült kép, nem támogatott vagy animált formátum         |
+| 415    | `UNSUPPORTED_MEDIA_TYPE`                | a kérés nem `multipart/form-data`                                 |
+| 429    | `RATE_LIMITED`                          | túl sok kísérlet, vagy már folyamatban van egy feltöltés          |
+| 503    | `SERVER_BUSY`                           | túl sok egyidejű feltöltés (`Retry-After` fejléccel)              |
 
 A módosító kéréseket a szerver csak a saját eredetéről fogadja el (`Sec-Fetch-Site: same-origin`;
 fejléc nélkül – pl. curl, REST Client – szintén): a kliens ezért az API-t és a képeket (`/api`,
@@ -266,11 +273,11 @@ mindig jelen van (ami nem értelmezhető, az `null`):
 }
 ```
 
-| `result`    | Mikor                                                                                                                                                                                           |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `VERIFIED`  | a hash **a láncon** regisztrálva van (a lánc az igazságforrás); a regisztráció ideje a lánc rekordjából                                                                                         |
-| `SIMILAR`   | csak `POST`: a legközelebbi nyilvános (`REGISTERED`) kép dHash-e legfeljebb `DHASH_THRESHOLD` bitben tér el, és a lánc is megerősíti (ugyanazzal a tulajdonossal); `distance` = az eltérő bitek |
-| `NOT_FOUND` | egyik sem (az adatbázis szerint regisztrált, de a láncon nem található képre is – ezt a szerver figyelmeztetésként naplózza)                                                                    |
+| `result`    | Mikor                                                                                                                                                                                                                                                                                                         |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VERIFIED`  | a hash **a láncon** regisztrálva van (a lánc az igazságforrás); a regisztráció ideje a lánc rekordjából                                                                                                                                                                                                       |
+| `SIMILAR`   | csak `POST`: a legközelebbi olyan nyilvános (`REGISTERED`) kép, amelynek dHash-e legfeljebb `DHASH_THRESHOLD` bitben tér el, és a lánc is megerősíti (ugyanazzal a tulajdonossal) – a küszöbön belüli jelölteket távolság szerint sorban vizsgálja, kérésenként legfeljebb ötöt; `distance` = az eltérő bitek |
+| `NOT_FOUND` | egyik sem (az adatbázis szerint regisztrált, de a láncon nem található képre is – ezt a szerver figyelmeztetésként naplózza)                                                                                                                                                                                  |
 
 - A kép és a fotós adatai (`photo`) csak a nyilvános (`REGISTERED`) képnél, és csak ha a lánc
   ugyanazt a tulajdonost (`ownerRef`) rögzítette; az elrejtett vagy még nem regisztrált képnél csak a
@@ -281,7 +288,7 @@ mindig jelen van (ami nem értelmezhető, az `null`):
 | Válasz | Hibakód                                                    | Mikor                                                                    |
 | ------ | ---------------------------------------------------------- | ------------------------------------------------------------------------ |
 | 400    | `VALIDATION_ERROR`                                         | hiányzó fájl, hibás (vagy hibásan %-kódolt) hash                         |
-| 400    | `IMAGE_TOO_SMALL` / `IMAGE_TOO_LARGE` / `LOW_DETAIL_IMAGE` | 100 képpontnál kisebb oldal, 50 megapixel fölött, egyszínű kép           |
+| 400    | `IMAGE_TOO_SMALL` / `IMAGE_TOO_LARGE` / `LOW_DETAIL_IMAGE` | 100 képpontnál kisebb oldal, 50 megapixel fölött, túl kevés részletű kép |
 | 400    | `INVALID_UPLOAD`                                           | több fájl, más mezőnévben küldött fájl                                   |
 | 403    | `FORBIDDEN`                                                | más webhelyről indított kérés (`Sec-Fetch-Site`) – a `GET` is            |
 | 413    | `PAYLOAD_TOO_LARGE`                                        | a fájl nagyobb a megengedettnél                                          |
@@ -826,9 +833,10 @@ Az élő rendszer: **https://photochain.onrender.com** – ingyenes csomagokon, 
   - **Supabase:** PostgreSQL 17 a Session poolerén át (5432-es port, IPv4), a tanúsítvány
     ellenőrzésével; Storage két **privát** buckettel (`originals`, `previews`).
   - **A képek a szerveren át:** a `/media` útvonal a Supabase-ből adja tovább az előnézetet és a
-    bélyegképet (az eredetit soha), `Cache-Control: private` fejléccel és IP-címenkénti korláttal.
-    Így a kliens és a CSP változatlan, és az elrejtett kép azonnal eltűnik – az ingyenes
-    Supabase-CDN egy órán át gyorsítótárazná.
+    bélyegképet (az eredetit soha), a kép láthatóságának ellenőrzése után, `Cache-Control: private`
+    fejléccel és IP-címenkénti korláttal. Így a kliens és a CSP változatlan, és az elrejtett vagy a
+    letiltott fotóshoz tartozó kép azonnal eltűnik – az ingyenes Supabase-CDN egy órán át
+    gyorsítótárazná.
   - **Sepolia:** ugyanaz a szerződés és platform-tárca, mint fejlesztéskor.
 - **Az éles változók** (`server/.env.production.example`, értékek nélkül; a szabályok:
   `server/src/config/env.ts`):
@@ -840,7 +848,7 @@ Az élő rendszer: **https://photochain.onrender.com** – ingyenes csomagokon, 
   | `DATABASE_SSL_CA_FILE`                                                        | a Supabase CA-tanúsítványa (a konténerben `/app/server/certs/supabase-prod-ca-2021.crt`); élesben távoli adatbázishoz kötelező, mellette a `DATABASE_URL`-ben nem lehet `sslmode` |
   | `IMAGE_MAX_MEGAPIXELS`, `IMAGE_PROCESSING_CONCURRENCY`                        | képpontkorlát (1–50, alapból 50; Renderen 25 – a kliens buildje is megkapja) és a közös képfeldolgozási sor szélessége (1–8, alapból 4; Renderen 1)                               |
   | `VERIFY_MAX_CONCURRENT`, `UPLOAD_MAX_CONCURRENT`                              | Renderen 1 és 2 (a memóriakeret miatt)                                                                                                                                            |
-  | `MEDIA_RATE_LIMIT_MAX`                                                        | a `/media` kérései IP-címenként időablakonként (alapból 600 / 15 perc)                                                                                                            |
+  | `MEDIA_RATE_LIMIT_MAX`                                                        | a `/media` kérései IP-címenként időablakonként (alapból 600 / 15 perc; helyi tárhelynél is, mert minden kérés adatbázis-lekérdezés)                                               |
   | `TRUST_PROXY_HOPS`                                                            | a proxyk száma a kliens és a szerver között – mérve: 3 (lásd lent)                                                                                                                |
   | `APP_BASE_URL`                                                                | élesben kötelező (a nyilvános cím)                                                                                                                                                |
 

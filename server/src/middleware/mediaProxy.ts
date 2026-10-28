@@ -4,8 +4,11 @@
 // kép (törölt előnézet) pedig azonnal 404 – nincs külső gyorsítótár, amely tovább adná.
 // - Csak a previews és a thumbnails mappa érhető el; az eredeti kép soha (a tárhelyhez sem fordul).
 // - A kulcsot a tárhely saját mintája ellenőrzi (UUID-fájlnév, jpg/png/webp): más útvonal 404.
-// - A böngésző 5 percig újrakérés nélkül használhatja (az ingyenes tárhely kimenő forgalma véges);
-//   köztes (CDN-) gyorsítótár nem tárolhatja (private), így az elrejtett kép valóban eltűnik.
+// - A kép láthatóságát (állapot, a fotós tiltása) már előtte a mediaAccess.ts ellenőrizte az
+//   adatbázisból: ide csak a kérő által látható kép kulcsa jut el.
+// - A nyilvános képet a böngésző 5 percig újrakérés nélkül használhatja (az ingyenes tárhely kimenő
+//   forgalma véges); köztes (CDN-) gyorsítótár nem tárolhatja (private), így az elrejtett kép valóban
+//   eltűnik. A nem nyilvános (csak a kezelőjének járó) kép válasza no-store – azt az őr állítja be.
 // - A fájl folyamként megy át (a tárhely sem tölti egészben a memóriába); a sebességkorlát az app.ts-ben.
 // Forrás: Express 5 API – req.params, res.set, https://expressjs.com/en/5x/api.html; Node.js –
 // stream.pipeline, https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options
@@ -21,8 +24,8 @@ import {
   type StorageService,
 } from '../services/storage/storage.types.js';
 
-/** Csak a böngésző (köztes gyorsítótár nem) használhatja 5 percig újrakérés nélkül */
-const MEDIA_CACHE_CONTROL = 'private, max-age=300';
+/** Csak a böngésző (köztes gyorsítótár nem) használhatja 5 percig újrakérés nélkül – helyi tárhelynél is */
+export const MEDIA_CACHE_CONTROL = 'private, max-age=300';
 /** A nyilvános mappák – az eredeti képek (originals) nem */
 const PUBLIC_FOLDERS = new Set(['previews', 'thumbnails']);
 
@@ -47,11 +50,9 @@ export function createMediaRouter(storage: Pick<StorageService, 'openRead'>): Ro
     }
     try {
       const { stream, size } = await storage.openRead(key);
-      res.set({
-        'Content-Type': contentType,
-        'Content-Length': String(size),
-        'Cache-Control': MEDIA_CACHE_CONTROL,
-      });
+      res.set({ 'Content-Type': contentType, 'Content-Length': String(size) });
+      // A nem nyilvános kép válaszát a mediaAccess.ts már no-store-ra állította
+      if (!res.get('Cache-Control')) res.set('Cache-Control', MEDIA_CACHE_CONTROL);
       await pipeline(stream, res);
     } catch (error) {
       // A hiányzó fájl (pl. az elrejtett kép törölt előnézete) a központi 404-es választ kapja

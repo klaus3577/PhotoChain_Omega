@@ -89,27 +89,34 @@ export async function toDHashGrid(image: Buffer): Promise<Uint8Array> {
   return data;
 }
 
-/**
- * A dHash harmadik lépése: soronként minden képpontot a jobb oldali szomszédjával vetünk össze.
- * A bit 1, ha a bal oldali képpont sötétebb a jobb oldalinál (a kép ott balról jobbra világosodik),
- * különben 0. A bitek balról jobbra, fentről lefelé következnek, a legnagyobb helyiértékkel kezdve:
- * minden sor egy bájt, azaz két hexadecimális számjegy.
- */
-export function dHashFromGrid(grid: Uint8Array): string {
+function assertGrid(grid: Uint8Array): void {
   if (grid.length !== DHASH_GRID_SIZE) {
     throw new RangeError(`A dHash rácsa pontosan ${DHASH_GRID_SIZE} fényességértékből áll`);
   }
-  const bytes = Buffer.alloc(DHASH_ROWS);
-  for (let row = 0; row < DHASH_ROWS; row += 1) {
+}
+
+/**
+ * A dHash harmadik lépése: soronként minden képpontot a jobb oldali szomszédjával vetünk össze.
+ * A bit 1, ha a bal oldali képpont sötétebb a jobb oldalinál (a kép ott balról jobbra világosodik),
+ * különben 0. A bitek balról jobbra következnek, a legnagyobb helyiértékkel kezdve: minden sor egy
+ * bájt (0 … 255). Csupa 0 bájt: a sor egyszínű vagy végig sötétedik; csupa 1 (255): végig világosodik.
+ */
+export function dHashRowBytes(grid: Uint8Array): number[] {
+  assertGrid(grid);
+  return Array.from({ length: DHASH_ROWS }, (_, row) => {
     let rowBits = 0;
     for (let column = 0; column < DHASH_COLUMNS - 1; column += 1) {
       const left = grid[row * DHASH_COLUMNS + column] ?? 0;
       const right = grid[row * DHASH_COLUMNS + column + 1] ?? 0;
       rowBits = (rowBits << 1) | (left < right ? 1 : 0);
     }
-    bytes[row] = rowBits;
-  }
-  return bytes.toString('hex');
+    return rowBits;
+  });
+}
+
+/** A dHash a rácsból: a sorok bájtjai fentről lefelé, két-két hexadecimális számjegyként. */
+export function dHashFromGrid(grid: Uint8Array): string {
+  return Buffer.from(dHashRowBytes(grid)).toString('hex');
 }
 
 /** A kép dHash-e: 16 kisbetűs hexadecimális számjegy (64 bit). */
@@ -141,19 +148,52 @@ export function hammingDistance(first: string, second: string): number {
   return distance;
 }
 
+/** Egy jelölt (kép) a megadott dHash-től mért Hamming-távolságával. */
+export interface RankedCandidate {
+  id: string;
+  distance: number;
+}
+
+/**
+ * A jelöltek a megadott dHash-től mért Hamming-távolságukkal, növekvő távolság szerint. A rendezés
+ * stabil: egyenlő távolságnál a lista korábbi eleme marad elöl – a hívók a korábban feltöltött képet
+ * teszik előre, mert az számít eredetinek. A hitelesség-ellenőrzés ebben a sorrendben vizsgálja a
+ * jelölteket, amíg a lánc az egyiket meg nem erősíti (verification.service.ts).
+ * Forrás: MDN – Array.prototype.sort() (ES2019 óta stabil rendezés),
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+ */
+export function rankByDistance(
+  dHash: string,
+  candidates: readonly { id: string; dHash: string }[],
+): RankedCandidate[] {
+  return candidates
+    .map((candidate) => ({ id: candidate.id, distance: hammingDistance(dHash, candidate.dHash) }))
+    .sort((first, second) => first.distance - second.distance);
+}
+
 /**
  * A megadott dHash-hez legközelebbi (legkisebb Hamming-távolságú) jelölt és a távolsága; üres
- * listára undefined. Egyenlő távolságnál a lista korábbi eleme marad – a hívók a korábban feltöltött
- * képet teszik előre, mert az számít eredetinek.
+ * listára undefined. Egyenlő távolságnál a lista korábbi eleme marad (lásd rankByDistance).
  */
 export function findClosest(
   dHash: string,
   candidates: readonly { id: string; dHash: string }[],
-): { id: string; distance: number } | undefined {
-  return candidates.reduce<{ id: string; distance: number } | undefined>((closest, candidate) => {
-    const distance = hammingDistance(dHash, candidate.dHash);
-    return closest && closest.distance <= distance ? closest : { id: candidate.id, distance };
-  }, undefined);
+): RankedCandidate | undefined {
+  return rankByDistance(dHash, candidates)[0];
+}
+
+/**
+ * Soronként a legvilágosabb és a legsötétebb cella fényességkülönbsége (8 érték, 0 … 255). A dHash
+ * egy sora csak akkor hordoz információt, ha a soron belül van fényességkülönbség: az egyszínű sor
+ * minden bitje 0, akárhogy tér is el a sor a többitől. A képelemzés ezzel ismeri fel a degenerált
+ * hash-t (imageAnalysis.ts).
+ */
+export function rowBrightnessRanges(grid: Uint8Array): number[] {
+  assertGrid(grid);
+  return Array.from({ length: DHASH_ROWS }, (_, row) => {
+    const cells = grid.subarray(row * DHASH_COLUMNS, (row + 1) * DHASH_COLUMNS);
+    return Math.max(...cells) - Math.min(...cells);
+  });
 }
 
 function assertBitCount(value: number, name: string): void {

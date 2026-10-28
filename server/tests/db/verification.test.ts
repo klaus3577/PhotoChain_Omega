@@ -16,7 +16,11 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { createApp } from '../../src/app.js';
 import type { Env } from '../../src/config/env.js';
 import type { PhotoStatus, PrismaClient } from '../../src/generated/prisma/client.js';
-import { createVerificationService } from '../../src/modules/verification/verification.service.js';
+import {
+  createVerificationService,
+  MAX_SIMILAR_CANDIDATES,
+  type VerificationService,
+} from '../../src/modules/verification/verification.service.js';
 import { ChainError, ownerRefOf } from '../../src/services/blockchain.service.js';
 import { hammingDistance, sha256 } from '../../src/services/hashing.service.js';
 import { restrictImageDecoders } from '../../src/services/imageDecoding.js';
@@ -169,6 +173,23 @@ function hidingBeforeLookup(client: PrismaClient, photoId: string): PrismaClient
 
 const resizedCopy = (image: Buffer, width: number): Promise<Buffer> =>
   sharp(image).resize({ width }).jpeg({ quality: 85 }).toBuffer();
+
+/** A szolgáltatás közvetlenül (HTTP nélkül), a megadott – pl. versenyhelyzetet utánzó – Prisma-klienssel. */
+function serviceWithPrisma(client: PrismaClient): VerificationService {
+  return createVerificationService({
+    prisma: client,
+    storage: createLocalStorage(uploadDir),
+    logger: pino({ level: 'silent' }),
+    blockchain: chain.blockchain,
+    dHashThreshold: TEST_ENV.DHASH_THRESHOLD,
+    chainId: TEST_ENV.CHAIN_ID,
+    imageWork: createImageWork(1),
+    chainReadLimit: {
+      limit: TEST_ENV.VERIFY_CHAIN_READ_LIMIT,
+      windowMs: TEST_ENV.RATE_LIMIT_WINDOW_MS,
+    },
+  });
+}
 
 /** Alkalmazás, amelynek naplósorai a tesztben olvashatók (a hibakeresési szinttől felfelé). */
 function appWithLog(overrides: Partial<Env> = {}): { target: Express; lines: string[] } {
@@ -391,6 +412,9 @@ describe('POST /api/verify – SIMILAR (közeli dHash)', () => {
     });
     expect(response.body.data.photo.id).not.toBe(far.id);
     expect(chain.blockchain.getRecord).toHaveBeenCalledWith(near.sha256);
+    // A legközelebbi megerősítése után megáll: a távolabbit a láncon már nem kérdezi
+    expect(chain.blockchain.getRecord).toHaveBeenCalledTimes(2);
+    expect(chain.blockchain.getRecord).not.toHaveBeenCalledWith(far.sha256);
   });
 
   it('a küszöbig (DHASH_THRESHOLD) SIMILAR, fölötte NOT_FOUND', async () => {
@@ -465,23 +489,164 @@ describe('POST /api/verify – SIMILAR (közeli dHash)', () => {
     });
     // A láncon is rajta van: csak az elrejtés (az állapot újbóli ellenőrzése) szűrheti ki
     putOnChain(similar.sha256, owner.id);
-    const service = createVerificationService({
-      prisma: hidingBeforeLookup(prisma, similar.id),
-      storage: createLocalStorage(uploadDir),
-      logger: pino({ level: 'silent' }),
-      blockchain: chain.blockchain,
-      dHashThreshold: TEST_ENV.DHASH_THRESHOLD,
-      chainId: TEST_ENV.CHAIN_ID,
-      imageWork: createImageWork(1),
-      chainReadLimit: {
-        limit: TEST_ENV.VERIFY_CHAIN_READ_LIMIT,
-        windowMs: TEST_ENV.RATE_LIMIT_WINDOW_MS,
-      },
-    });
+    const service = serviceWithPrisma(hidingBeforeLookup(prisma, similar.id));
 
     const result = await service.verifyFile(PUDDLE);
 
     expect(result).toMatchObject({ result: 'NOT_FOUND', registration: null, photo: null });
+  });
+
+  // A jelölteket távolság szerint sorban vizsgálja; egyetlen jelölt kiesése nem jelenti, hogy nincs
+  // találat (témavezetői észrevétel, 2026-10-27)
+  describe('a jelöltek vizsgálata távolság szerint sorban', () => {
+    it('ha a legközelebbi jelöltet a lánc nem erősíti meg, a következő, küszöbön belüli jelöltet adja', async () => {
+      const { target, lines } = appWithLog();
+      const unconfirmed = await createPhoto(prisma, {
+        ownerId: owner.id,
+        categoryId,
+        dHash: withFlippedBits(PUDDLE_DHASH, 2),
+        status: 'REGISTERED',
+      });
+      const confirmed = await registeredPhotoWithDHash(withFlippedBits(PUDDLE_DHASH, 5));
+
+      const response = await verifyFile(PUDDLE, target);
+
+      expect(response.body.data).toMatchObject({
+        result: 'SIMILAR',
+        distance: 5,
+        photo: { id: confirmed.id },
+        registration: { registeredAt: CHAIN_REGISTERED_AT.toISOString() },
+      });
+      // A kieső jelölt nyoma a naplóban marad, a láncot mindkettőre megkérdezte
+      const warnings = lines
+        .map((line) => JSON.parse(line) as { level: number; photoId?: string; msg: string })
+        .filter((entry) => entry.photoId === unconfirmed.id);
+      expect(warnings).toEqual([
+        expect.objectContaining({ level: 40, msg: expect.stringMatching(/nincs a láncon/) }),
+      ]);
+      expect(chain.blockchain.getRecord).toHaveBeenCalledWith(unconfirmed.sha256);
+      expect(chain.blockchain.getRecord).toHaveBeenCalledWith(confirmed.sha256);
+    });
+
+    it('ha a legközelebbi jelölt láncon rögzített tulajdonosa más, szintén a következőt adja', async () => {
+      const foreignOwned = await createPhoto(prisma, {
+        ownerId: owner.id,
+        categoryId,
+        dHash: withFlippedBits(PUDDLE_DHASH, 1),
+        status: 'REGISTERED',
+      });
+      putOnChain(foreignOwned.sha256, (await createUser(prisma)).id);
+      const confirmed = await registeredPhotoWithDHash(withFlippedBits(PUDDLE_DHASH, 3));
+
+      const response = await verifyFile(PUDDLE);
+
+      expect(response.body.data).toMatchObject({
+        result: 'SIMILAR',
+        distance: 3,
+        photo: { id: confirmed.id },
+      });
+    });
+
+    it('ha a legközelebbi jelöltet közben elrejtik, a következő, láncon megerősített jelöltet adja', async () => {
+      const hiddenMeanwhile = await registeredPhotoWithDHash(withFlippedBits(PUDDLE_DHASH, 1));
+      const next = await registeredPhotoWithDHash(withFlippedBits(PUDDLE_DHASH, 4));
+      const service = serviceWithPrisma(hidingBeforeLookup(prisma, hiddenMeanwhile.id));
+
+      const result = await service.verifyFile(PUDDLE);
+
+      expect(result).toMatchObject({
+        result: 'SIMILAR',
+        distance: 4,
+        photo: { id: next.id },
+        registration: { registeredAt: CHAIN_REGISTERED_AT },
+      });
+    });
+
+    it('a küszöbön kívüli jelöltet nem vizsgálja: ha a küszöbön belüliek mind kiesnek, NOT_FOUND', async () => {
+      const inside = await createPhoto(prisma, {
+        ownerId: owner.id,
+        categoryId,
+        dHash: withFlippedBits(PUDDLE_DHASH, 3),
+        status: 'REGISTERED',
+      });
+      const outside = await registeredPhotoWithDHash(
+        withFlippedBits(PUDDLE_DHASH, TEST_ENV.DHASH_THRESHOLD + 1),
+      );
+
+      const response = await verifyFile(PUDDLE);
+
+      expect(response.body).toEqual(notFoundBody(PUDDLE, PUDDLE_DHASH));
+      // A vizsgált fájl hash-e és a küszöbön belüli jelölt: két láncolvasás, a kívüli nélkül
+      expect(chain.blockchain.getRecord).toHaveBeenCalledTimes(2);
+      expect(chain.blockchain.getRecord).toHaveBeenCalledWith(inside.sha256);
+      expect(chain.blockchain.getRecord).not.toHaveBeenCalledWith(outside.sha256);
+    });
+
+    it('ha a legközelebbi jelöltet a lánc megerősíti, a többit nem vizsgálja, és figyelmeztetés sem kerül a naplóba', async () => {
+      const { target, lines } = appWithLog();
+      const confirmed = await registeredPhotoWithDHash(withFlippedBits(PUDDLE_DHASH, 1));
+      for (let bits = 2; bits <= MAX_SIMILAR_CANDIDATES + 2; bits += 1) {
+        await createPhoto(prisma, {
+          ownerId: owner.id,
+          categoryId,
+          dHash: withFlippedBits(PUDDLE_DHASH, bits),
+          status: 'REGISTERED',
+        });
+      }
+
+      const response = await verifyFile(PUDDLE, target);
+
+      expect(response.body.data).toMatchObject({
+        result: 'SIMILAR',
+        distance: 1,
+        photo: { id: confirmed.id },
+      });
+      expect(chain.blockchain.getRecord).toHaveBeenCalledTimes(2);
+      expect(lines.some((line) => line.includes('csak a legközelebbieket'))).toBe(false);
+    });
+
+    it(`kérésenként legfeljebb ${MAX_SIMILAR_CANDIDATES} jelöltet erősít meg a láncon (a közös keret védelme)`, async () => {
+      // A teszt jelöltjei csak a küszöbön belül maradva vizsgálják a korlátot
+      expect(MAX_SIMILAR_CANDIDATES + 2).toBeLessThanOrEqual(TEST_ENV.DHASH_THRESHOLD);
+      const { target, lines } = appWithLog();
+      // Eggyel több, a lánc által meg nem erősített jelölt a küszöbön belül, mint amennyit megvizsgál;
+      // a láncon lévő kép a sor végén marad
+      for (let bits = 1; bits <= MAX_SIMILAR_CANDIDATES + 1; bits += 1) {
+        await createPhoto(prisma, {
+          ownerId: owner.id,
+          categoryId,
+          dHash: withFlippedBits(PUDDLE_DHASH, bits),
+          status: 'REGISTERED',
+        });
+      }
+      const confirmed = await registeredPhotoWithDHash(
+        withFlippedBits(PUDDLE_DHASH, MAX_SIMILAR_CANDIDATES + 2),
+      );
+
+      const response = await verifyFile(PUDDLE, target);
+
+      expect(response.body).toEqual(notFoundBody(PUDDLE, PUDDLE_DHASH));
+      // Egy olvasás a vizsgált fájl saját hash-ére, aztán legfeljebb ennyi a jelöltekre
+      expect(chain.blockchain.getRecord).toHaveBeenCalledTimes(MAX_SIMILAR_CANDIDATES + 1);
+      expect(chain.blockchain.getRecord).not.toHaveBeenCalledWith(confirmed.sha256);
+      // A figyelmeztetés a vizsgált és az összes küszöbön belüli jelölt számával
+      const warning = lines
+        .map(
+          (line) =>
+            JSON.parse(line) as {
+              level: number;
+              msg: string;
+              candidates?: number;
+              examined?: number;
+            },
+        )
+        .find((entry) => entry.msg.includes('csak a legközelebbieket'));
+      expect(warning).toMatchObject({
+        level: 40,
+        candidates: MAX_SIMILAR_CANDIDATES + 2,
+        examined: MAX_SIMILAR_CANDIDATES,
+      });
+    });
   });
 
   it.each<PhotoStatus>(['HIDDEN', 'PENDING_CHAIN', 'CHAIN_FAILED'])(
@@ -632,7 +797,9 @@ describe('POST /api/verify – hibás bemenet (4xx, soha 500)', () => {
     expect(response.status).toBe(400);
     expect(response.body.error).toEqual({
       code: 'LOW_DETAIL_IMAGE',
-      message: 'A kép gyakorlatilag egyszínű – nem ellenőrizhető',
+      message:
+        'A kép túl kevés részletet tartalmaz (egyszínű, vagy csak egy irányban változik) – ' +
+        'nem ellenőrizhető',
     });
   });
 

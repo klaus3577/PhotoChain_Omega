@@ -179,6 +179,9 @@ describe('POST /api/photos – sikeres feltöltés', () => {
     const { body } = await upload(PUDDLE).expect(201);
     const photo = await prisma.photo.findFirstOrThrow();
 
+    // A regisztráció után a kép nyilvános, az előnézete bárkinek jár (a még regisztrációra váró képé
+    // csak a tulajdonosának – tests/db/media.test.ts)
+    await chain.photoRegistration.whenIdle();
     const preview = await request(app).get(body.data.photo.previewUrl);
     expect(preview.status).toBe(200);
     expect(preview.headers['content-type']).toBe('image/jpeg');

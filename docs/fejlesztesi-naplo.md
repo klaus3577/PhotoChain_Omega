@@ -4842,3 +4842,152 @@ Forrás:` kommentek a specekben és segédekben, a `db:reset-test` a README-ben,
 
 - Commit: `0d79bff` – `fix(kiprobalas)` (az e2e és a `dev` script); a dokumentáció a lezáró
   `docs(kiprobalas)` commitban.
+
+## Témavezetői észrevételek javítása: előnézet-kiszolgálás, degenerált dHash, hasonló találat (2026-10-27)
+
+- Kiindulás: a témavezető a nyilvános példány átnézése után három hibát jelzett:
+  1. **A letiltott fotós előnézeti képei közvetlen URL-en elérhetők maradtak.** A tiltás nem
+     törli az előnézeti fájlokat (a feloldás után vissza kell jönniük), a `/media` útvonal pedig
+     csak azt nézte, megvan-e a fájl a tárhelyen – egy egyszer megismert URL új HTTP-kérésre is
+     működött. (Az OWASP-lista 6. fejezete ezt eddig elfogadott kockázatként tartotta nyilván.)
+  2. **Két különböző, nem egyszínű kép duplikátumnak minősült.** Egy 600 × 600-as függőleges
+     fényességátmenet és egy vízszintes sávokból álló kép: mindkettő átment az egyszínűség-szűrőn,
+     az SHA-256-uk eltért, a dHash-ük mégis `0000000000000000` lett, így a második feltöltést a
+     szolgáltatás `DUPLICATE_SIMILAR` hibával utasította el. Az ok: a dHash soronként a szomszédos
+     cellákat veti össze, a soron belül állandó fényességű képnél minden összehasonlítás 0 –
+     a kép egészének fényességtartománya ezt nem szűri ki.
+  3. **Az ellenőrző kihagyhatott érvényes hasonló találatot.** A `findSimilar` a legközelebbi
+     adatbázisbeli jelöltnél megállt: ha azt a lánc nem erősítette meg (vagy közben elrejtették),
+     `NOT_FOUND` lett az eredmény akkor is, ha volt második, küszöbön belüli, érvényes jelölt.
+- Reprodukálás és mérés (jegyzetmappa, `measure-dhash.mjs` – `JAV_13`): a két példakép mása
+  9 × 8-as rácsának minden vízszintes szomszédpárja 0 különbségű (hash `0000…`), miközben a kép
+  egészének fényességtartománya 168, illetve 225 – a régi szűrő (globális tartomány ≥ 16) ezért
+  engedte át őket. A saját tesztfotókon (és 600 képpontos másolataikon) 5–8 sorban legalább 16 a
+  soron belüli tartomány; a képpontzajban és az egyetlen folttal kiegészített átmenetben 0–2.
+- Javítások, teszt-elsővel (a piros futások: `JAV_01`–`JAV_03`):
+  1. **`/media` – a kép láthatóságának ellenőrzése a kiszolgálás előtt**
+     (`server/src/middleware/mediaAccess.ts`, `app.ts`): a fájl neve a kép azonosítója (a
+     feltöltés így nevezi el a fájlokat), ezért a kép az elsődleges kulcsán kereshető; a kért
+     kulcsnak a kép saját kulcsai közt kell lennie (árva fájl nem adható ki). Ugyanaz a szabály,
+     mint az adatlapon (`photos.visibility.ts`): a nyilvános képet bárki, a többit csak a
+     tulajdonosa és az admin kapja meg – a munkamenetet csak a nem nyilvános képnél tölti be
+     (`sessionViewer`, `auth.ts`), a letiltott tulajdonos névtelen néző –, másnak 404, ugyanaz,
+     mint a nem létező képre. Csak a pontosan `/<previews|thumbnails>/<UUID>.<jpg|png|webp>` alakú
+     útvonal jut az adatbázisig; a tesztek két további rést is megmutattak, amelyet az
+     `express.static` eddig kiszolgált: a dupla perjeles (`//previews/…`) és a nagybetűs
+     azonosítójú útvonalat (Windows alatt a fájlrendszer nem különbözteti meg a kis- és
+     nagybetűt). Minden kérés adatbázis-lekérdezés, ezért az IP-címenkénti korlát
+     (`MEDIA_RATE_LIMIT_MAX`) és a `Cache-Control: private, max-age=300` fejléc most helyi
+     tárhelynél is érvényes (eddig csak a távolinál); a nem nyilvános kép és a 404 válasza
+     `no-store`. A még regisztrációra váró (`PENDING_CHAIN`, `CHAIN_FAILED`) kép előnézete
+     ezentúl szintén csak a kezelőjének jár; a vásárlásaim listában a letiltott fotós képének
+     bélyegképe `null` (`orders.dto.ts` – a kliens különben, az admin vásárlót kivéve, 404-gyel
+     végződő kérést küldene). Az elrejtés továbbra is törli a nyilvános fájlokat. A `/media` tesztjei a tesztadatbázisra
+     kerültek (`tests/db/media.test.ts`, 36 teszt: helyi és távoli tárhely, tiltás, állapotok,
+     rejtett kép senkinek (a kezelőjének sem), árva fájl, a lekérdezések száma, szabálytalan útvonalak
+     munkamenettel is az adatbázis érintése nélkül, HEAD, csak olvasás, korlát), az őr
+     egységtesztjei külön (`mediaAccess.test.ts`, 21 teszt); a tesztadatok (`createPhoto`)
+     kulcsai a kép azonosítójából képződnek, mint a feltöltésnél.
+  2. **Informatív sorok** (`imageAnalysis.ts`, `hashing.service.ts`: `rowBrightnessRanges`,
+     `dHashRowBytes`): a kép egészének tartománya helyett soronként – egy sor akkor informatív,
+     ha a tartománya ≥ 16, és a bájtja nem csupa 0 vagy csupa 1 bit (a balról jobbra végig
+     világosodó vagy sötétedő sor – vízszintes, átlós átmenet – ugyanúgy nem különböztet meg
+     képeket, mint az egyszínű); legalább 3 informatív sor kell, különben `400 LOW_DETAIL_IMAGE`
+     („A kép túl kevés részletet tartalmaz (egyszínű, vagy csak egy irányban változik) – nem
+     tölthető fel / ellenőrizhető”). A témavezető két példaképének mása a tesztben eltérő
+     SHA-256-ot és azonos, csupa 0 dHash-t ad, utána mindkettő 400-at kap; ugyanígy a vízszintes,
+     a fordított és az átlós átmenet, a képpontzaj és a folttal kiegészített átmenet; a három
+     saját tesztfotó a rögzített dHash-sel átmegy, és 9 × 8 cellás határmintákon pontosan 3
+     informatív sor még elfogadott, 2 – vagy 2 + egy végig világosodó, illetve 2 + egy kis
+     tartományú sor – már nem.
+  3. **A jelöltek vizsgálata távolság szerint sorban** (`verification.service.ts`,
+     `hashing.service.ts` `rankByDistance` – stabil rendezés, egyenlő távolságnál a korábban
+     feltöltött kép elöl; azonos időpontnál az azonosító dönt, a feltöltésnél is): a küszöbön
+     belüli jelölteket sorban erősíti meg a láncon, az első megerősített a találat (a saját
+     távolságával), utána megáll; a kieső jelölt nyoma a naplóban marad. A lánc által meg nem
+     erősített, a más tulajdonosú és a közben elrejtett legközelebbi jelölt után is a következő
+     jön; a küszöbön kívüli jelöltre a láncot nem kérdezi. Kérésenként legfeljebb
+     `MAX_SIMILAR_CANDIDATES` (5) jelöltet erősít meg – a feltöltés a hasonló képeket elutasítja,
+     így ennél több jelölt csak kivételesen lehet; ha a megvizsgáltak egyikét sem erősíti meg a
+     lánc, és maradt vizsgálatlan jelölt, figyelmeztetés kerül a naplóba. A `findClosest` a
+     feltöltésnél változatlan.
+- Átnézés a commit előtt: négy független, csak olvasó átnézés (helyesség, biztonság,
+  tesztminőség, a témavezető szemszöge: lezárt-e mindhárom észrevétel), majd a találatok külön
+  ellenőrzése – az ellenőrző kör félbeszakadt, ezért a legtöbb találatot kézi ellenőrzés bírálta
+  el. Javítva, teszt-elsővel: a vízszintes és átlós átmenet még átment a soronkénti tartomány
+  szabályán (magas – a sor bitjei is számítanak); a 4 sor túl szigorú volt (a gyertyás tesztfotó
+  20 %-kal sötétebb másolata 3 sorral kiesett volna – a küszöb 3); a tesztekben a „nem létező
+  kép” azonosítója egybeesett a létezővel (a válasz önmagával volt összevetve), a feltöltés-teszt
+  névtelen 404-e versenyhelyzetes volt (a regisztráció a válasz előtt indul – most a regisztráció
+  megvárása után 200), a lekérdezés-számláló pozitív kontroll nélkül állt, a legközelebbi jelölt
+  megerősítése utáni megállás és a küszöbön belüli jelölt olvasása nem volt rögzítve, a korlát
+  tesztje a küszöbtől függött; a munkamenet minden képkérésnél betöltődött (most csak a nem
+  nyilvános képnél); a nem nyilvános kép és a 404 válasza gyorsítótárazható volt (`no-store`);
+  a rendelés bélyegkép-URL-je a letiltott fotós képénél; a korlát figyelmeztetése a ciklus előtt
+  (akkor is, ha az első jelölt igazolt); a jelöltek sorrendje azonos időpontnál; a kommentek
+  pontatlanságai. Elfogadva, indoklással: egy ellenőrzés legfeljebb 1 + 5 láncolvasás (egy
+  IP-cím 20 kérése a közös 200-as keret 60 %-a; a keret kimerülése 503, nem hamis `NOT_FOUND` –
+  a `MAX_SIMILAR_CANDIDATES` megjegyzése rögzíti); a `/media` IP-korlátja helyi tárhelynél
+  (600 / 15 perc, a nyilvános kép 5 percig a böngésző gyorsítótárában – mint az élesítés óta);
+  a láncon meg nem talált jelölt nem kerül a megjegyzett rekordok közé (bármikor
+  regisztrálhatják).
+- Dokumentáció: OWASP-lista (az A01 tétel „Elfogadott”-ról „Javítva”-ra, a 6. fejezet tétele
+  törölve, új 8. fejezet, az `app.ts`, a `photos.catalog.ts` és a `mediaProxy.ts` elcsúszott
+  sorhivatkozásai), `RESZLETES_LEIRAS.md` (feltöltés, hibakódok, `SIMILAR`, élesítés,
+  `MEDIA_RATE_LIMIT_MAX`), `server/.env.example`, FORRASOK 306–307. A fejlesztési terv 5.1
+  pontjának mondata (`GET /media/:folder/:file` – „helyi tárhelynél statikus fájlként”) a terv
+  szabálya szerint változatlan maradt.
+- Ellenőrzés: `npm run check` – formázás, lint, típusok hibátlan; 22 design-, 21 szerződésteszt;
+  a szerveren 79 tesztfájl, 1375 teszt (99,47 / 98,18 / 99,83 / 99,71 %), a kliensen 61 fájl,
+  725 teszt (98,69 / 95,17 / 99,17 / 99,25 %) – `JAV_14`, `JAV_15`; `npm run test:e2e`: 6
+  setup-egységteszt, 4 sikeres, 1 kihagyott (Stripe-kulcs nélkül) e2e-teszt – `JAV_16`. Ugyanez a
+  javítás az eredeti fejlesztői repóban is (a kód, a tesztek és a dokumentáció azonos).
+- Záró audit a leadás előtt (2026-10-28), négy független, csak olvasó vizsgálattal: tiszta példány
+  telepítése és teljes ellenőrzése (`install:all`, `check`, `test:e2e`, `build` – mind hibátlan);
+  fekete dobozos próba a lefordított szerveren, lánc nélkül (két futás, 133 kérés a `/media` és a
+  hitelesség-ellenőrzés végpontjaira: 101 a várt válasz, 29 tájékoztató, 3 eltérés – kettőt nyers
+  kéréssel megismételve 404, ahogy kell: a HTTP-kliens normalizálta a `..` útvonalat, az Express
+  útvonala kis- és nagybetűre érzéketlen; a harmadik a kezelő feltételes kérésére 304 helyett
+  adott teljes 200, a nem nyilvános kép `no-store` válaszánál a gyorsítótárazás nem cél); mutációs
+  próba a három javításon (14 szándékos hibából a tesztkészlet mind a 14-et elkapta); a kliens és a dokumentáció egyeztetése a szerverrel. Egy apró
+  hiba derült ki, teszt-elsővel javítva: a rejtett kép fájljára a kezelője más választ kapott, mint
+  bárki más – amíg a fájl megvolt (elrejtés vagy visszaállítás közben), 200-at, a törlése után az
+  általános 404-oldalt a `/media` egyforma 404-e helyett –; most a rejtett kép fájlja senkinek nem
+  jár (az adatlap sem ad rá URL-t), és a lánc végén a `mediaFileMissing` a látható kép hiányzó
+  fájljára is ugyanazt a `no-store` 404-et adja (`mediaAccess.ts`, `app.ts`;
+  `mediaAccess.test.ts` 21, `media.test.ts` 36 teszt). A dokumentáció elavult számai (tesztek,
+  lefedettség) és elcsúszott sorhivatkozásai (OWASP-lista: `auth.ts`, `env.ts`, `app.ts`,
+  `mediaProxy.ts`) frissítve.
+- Függőségek (`npm audit`, 2026-10-28): az L30 óta megjelent tanácsadások – a `server/`-ben 10
+  (4 magas: `zod`, `body-parser`, `multer`, `vite`; 6 mérsékelt: `@vitest/mocker`, `fast-uri`,
+  `ip-address`, `qs`), a `client/`-ben 2 magas (`undici`, `zod`), a `blockchain/`-ben 15 (1 alacsony,
+  14 magas: `undici`, `serialize-javascript`, `zod`). `npm audit fix` a meglévő verziótartományon
+  belül (csak a lockfile-ok; a `vitest` és a `@vitest/coverage-v8` alsó határa ^5.0.5-re emelve):
+  a gyökér, a `server/`, a `client/` és az `e2e/` 0; a `blockchain/`-ben 13 magas marad – egyetlen
+  tanácsadás (`zod` < 4.6.6, GHSA-mrhx-c7xc-m3w5) a Hardhat 3 eszközláncán át, javítás nélkül;
+  csak a szerződés fejlesztői eszköze, a futó szervert nem érinti (a szerver `zod`-ja 4.6.7) –
+  elfogadva, részletezve az OWASP-lista 3.1 pontjában és a `KIPROBALAS.md`-ben. A frissített
+  függőségekkel a teljes ellenőrzés újra lefutott (`JAV_14`–`JAV_16`).
+- Képek:
+
+| Kép                             | Forrás                                                                                                                              | Tartalom                                                                                                                                                               |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `JAV_01_piros_kepelemzes.png`   | `npx vitest run --project unit …hashing.service.test.ts …imageAnalysis.test.ts` a javítás előtt (mentett kimenet)                   | 9 bukó teszt: a két új függvény hiánya, a degenerált képek elfogadása                                                                                                  |
+| `JAV_02_piros_ellenorzo.png`    | `npx vitest run --project db tests/db/verification.test.ts -t "a jelöltek vizsgálata …"` a régi `findSimilar`-ral (mentett kimenet) | a második jelöltet nem vizsgálja: `NOT_FOUND` (4 bukó teszt)                                                                                                           |
+| `JAV_03_piros_media.png`        | `npx vitest run --project db tests/db/media.test.ts` a régi bekötéssel (mentett kimenet)                                            | 11 bukó teszt: a letiltott fotós és a nem nyilvános kép, a dupla perjeles és a nagybetűs útvonal kiszolgálva                                                           |
+| `JAV_04_media_access_or.png`    | `server/src/middleware/mediaAccess.ts` 83–143. sor                                                                                  | a lánc végének 404-e (`mediaFileMissing`) és a `/media` őre: metódus, útvonal, a kép és a kulcs, a rejtett kép, a láthatóság; a munkamenet csak a nem nyilvános képnél |
+| `JAV_05_media_bekotes.png`      | `server/src/app.ts` 239–270. sor                                                                                                    | a `/media` bekötése: IP-korlát, őr, `express.static` (`private`, ha nincs `no-store`) vagy a tárhely továbbítása, a lánc végén a hiányzó fájl 404-e                    |
+| `JAV_06_kepelemzes_szabaly.png` | `server/src/services/imageAnalysis.ts` 31–51. sor                                                                                   | az egységes sorbájtok és a 3 informatív sor szabálya, a mérésekkel                                                                                                     |
+| `JAV_17_informativ_sorok.png`   | `server/src/services/imageAnalysis.ts` 108–115. sor                                                                                 | `hasUsableFingerprint`: tartomány ≥ 16 és nem egységes bájt                                                                                                            |
+| `JAV_07_sorok_fenyessege.png`   | `server/src/services/hashing.service.ts` 185–197. sor                                                                               | `rowBrightnessRanges`                                                                                                                                                  |
+| `JAV_08_rendezes_tavolsag.png`  | `server/src/services/hashing.service.ts` 157–172. sor                                                                               | `rankByDistance` (stabil rendezés)                                                                                                                                     |
+| `JAV_09_ellenorzo_jeloltek.png` | `server/src/modules/verification/verification.service.ts` 329–364. sor                                                              | `findSimilar`: a jelöltek sorban, a korlát és a naplósor                                                                                                               |
+| `JAV_10_teszt_media_tiltas.png` | `server/tests/db/media.test.ts` 165–192. sor                                                                                        | a letiltott fotós fájljai: 404 a tiltás alatt (`no-store`), 200 az adminnak és a feloldás után; a fájl megmarad                                                        |
+| `JAV_11_teszt_degeneralt.png`   | `server/src/services/imageAnalysis.test.ts` 130–136. sor                                                                            | a témavezető két képének mása: eltérő SHA-256, azonos csupa 0 dHash                                                                                                    |
+| `JAV_12_teszt_jeloltek.png`     | `server/tests/db/verification.test.ts` 502–529. sor                                                                                 | a lánc által meg nem erősített legközelebbi jelölt után a következő a találat                                                                                          |
+| `JAV_13_meres_racs.png`         | `node measure-dhash.mjs` (jegyzetmappa, mentett kimenet)                                                                            | a 9 × 8-as rács statisztikái a tesztfotókon és szintetikus képeken                                                                                                     |
+| `JAV_14_szerver_tesztek.png`    | `npm run coverage` a `server` mappában (az `npm run check` mentett kimenetéből)                                                     | 79 tesztfájl, 1375 teszt, a lefedettség                                                                                                                                |
+| `JAV_15_check.png`              | `npm run check` (az összesítő sorok)                                                                                                | formázás, lint, design- és szerződéstesztek, típusok, a szerver és a kliens lefedettsége                                                                               |
+| `JAV_16_e2e.png`                | `npm run test:e2e` (mentett kimenet)                                                                                                | 6 setup-egységteszt, 4 sikeres, 1 kihagyott e2e-teszt                                                                                                                  |
+
+- Commit: a szerző döntése után.

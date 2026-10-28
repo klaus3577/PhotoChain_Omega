@@ -52,6 +52,8 @@ export function createCategory(prisma: PrismaClient) {
 }
 
 export interface PhotoFixture {
+  /** A kép azonosítója (alapból véletlen); a fájlok kulcsa belőle képződik, mint a feltöltésnél */
+  id?: string;
   ownerId: string;
   categoryId: number;
   title?: string;
@@ -70,10 +72,12 @@ export interface PhotoFixture {
 }
 
 export function createPhoto(prisma: PrismaClient, fixture: PhotoFixture) {
-  // A tárhelykulcsok a valódiakhoz hasonlóan UUID-alapúak (a nyilvános URL csak ilyenhez készül)
-  const key = randomUUID();
+  // A tárhelykulcsok a kép azonosítójából képződnek, mint a feltöltésnél (photos.service.ts): a
+  // /media kiszolgálás a fájl nevéből azonosítja a képet
+  const key = fixture.id ?? randomUUID();
   return prisma.photo.create({
     data: {
+      id: key,
       ownerId: fixture.ownerId,
       categoryId: fixture.categoryId,
       title: fixture.title ?? 'Naplemente',

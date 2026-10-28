@@ -284,8 +284,9 @@ const envObjectSchema = z.object({
     .min(1)
     .max(MAX_IMAGE_PROCESSING_CONCURRENCY)
     .default(4),
-  // Távoli tárhelynél a /media képei IP-címenként ennyiszer kérhetők egy időablakban
-  // (RATE_LIMIT_WINDOW_MS): minden kérés egy tárhely-letöltés, a kimenő forgalom kerete véges (L32)
+  // A /media képei IP-címenként ennyiszer kérhetők egy időablakban (RATE_LIMIT_WINDOW_MS): minden
+  // kérés a kép láthatóságának adatbázis-lekérdezése, távoli tárhelynél egy tárhely-letöltés is (a
+  // kimenő forgalom kerete véges, L32)
   MEDIA_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(600),
 });
 

@@ -196,10 +196,11 @@ export function createPhotosService({
     // Minden meglévő kép dHash-ével összevetjük (az elrejtettekkel is) – ehhez csak az azonosító
     // és a hash kell. Prototípus-méretben ez elég; nagy adatmennyiségnél indexelt keresés (pl.
     // BK-fa) kellene.
-    // Egyenlő távolságnál a korábban feltöltött kép számít eredetinek
+    // Egyenlő távolságnál a korábban feltöltött kép számít eredetinek (azonos időpontnál az
+    // azonosító dönt, így a sorrend állandó)
     const candidates = await prisma.photo.findMany({
       select: { id: true, dHash: true },
-      orderBy: { createdAt: 'asc' },
+      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
     });
     const closest = findClosest(image.dHash, candidates);
     if (!closest || !isNearDuplicate(closest.distance, dHashThreshold)) return;

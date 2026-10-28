@@ -11,10 +11,13 @@ import {
   DEFAULT_DHASH_THRESHOLD,
   dHash,
   dHashFromGrid,
+  dHashRowBytes,
   findClosest,
   hammingDistance,
   InvalidImageError,
   isNearDuplicate,
+  rankByDistance,
+  rowBrightnessRanges,
   sha256,
   toDHashGrid,
 } from './hashing.service.js';
@@ -377,6 +380,94 @@ describe('findClosest', () => {
 
   it('üres listára undefined', () => {
     expect(findClosest('0000000000000000', [])).toBeUndefined();
+  });
+});
+
+describe('rankByDistance', () => {
+  const candidates = [
+    { id: 'tavoli', dHash: 'ffffffffffffffff' },
+    { id: 'kozeli', dHash: '0000000000000003' },
+    { id: 'szinten-kozeli', dHash: '0000000000000030' },
+  ];
+
+  it('minden jelöltet a Hamming-távolságával ad, növekvő távolság szerint', () => {
+    expect(rankByDistance('0000000000000001', candidates)).toEqual([
+      { id: 'kozeli', distance: 1 },
+      { id: 'szinten-kozeli', distance: 3 },
+      { id: 'tavoli', distance: 63 },
+    ]);
+  });
+
+  it('egyenlő távolságnál a lista sorrendje marad (a korábban feltöltött kép elöl)', () => {
+    const ranked = rankByDistance('0000000000000000', candidates);
+
+    expect(ranked.map((candidate) => candidate.id)).toEqual(['kozeli', 'szinten-kozeli', 'tavoli']);
+    expect(ranked.map((candidate) => candidate.distance)).toEqual([2, 2, 64]);
+  });
+
+  it('a jelöltek listáját nem módosítja; üres listára üres lista', () => {
+    const before = [...candidates];
+
+    rankByDistance('0000000000000001', candidates);
+
+    expect(candidates).toEqual(before);
+    expect(rankByDistance('0000000000000000', [])).toEqual([]);
+  });
+});
+
+describe('rowBrightnessRanges', () => {
+  it('soronként a legvilágosabb és a legsötétebb cella különbségét adja (8 érték)', async () => {
+    const grid = await toDHashGrid(
+      await grayPng([
+        [0, 30, 60, 90, 120, 150, 180, 210, 240], // 240
+        [240, 210, 180, 150, 120, 90, 60, 30, 0], // 240
+        [0, 255, 0, 255, 0, 255, 0, 255, 0], // 255
+        [100, 100, 100, 100, 100, 100, 100, 100, 100], // egyszínű sor: 0
+        [0, 0, 0, 0, 0, 0, 0, 0, 16], // 16
+        [10, 20, 20, 20, 30, 30, 30, 30, 40], // 30
+        [200, 200, 200, 200, 200, 200, 200, 200, 200], // 0
+        [5, 5, 5, 5, 5, 5, 5, 5, 5], // 0
+      ]),
+    );
+
+    expect(rowBrightnessRanges(grid)).toEqual([240, 240, 255, 0, 16, 30, 0, 0]);
+  });
+
+  it('a soronként egyszínű (csak fentről lefelé változó) képre csupa 0, bár a kép nem egyszínű', async () => {
+    const rows = Array.from({ length: 8 }, (_, row) => Array<number>(9).fill(row * 32));
+    const grid = await toDHashGrid(await grayPng(rows));
+
+    expect(Math.max(...grid) - Math.min(...grid)).toBeGreaterThanOrEqual(200);
+    expect(rowBrightnessRanges(grid)).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+  });
+
+  it('csak pontosan 72 fényességértéket fogad el', () => {
+    expect(() => rowBrightnessRanges(new Uint8Array(71))).toThrow(RangeError);
+    expect(() => rowBrightnessRanges(new Uint8Array(73))).toThrow(RangeError);
+  });
+});
+
+describe('dHashRowBytes', () => {
+  it('soronként egy bájt: a sor 8 bitje a legnagyobb helyiértékkel kezdve – a dHash ezekből áll', async () => {
+    const grid = await toDHashGrid(
+      await grayPng([
+        [0, 30, 60, 90, 120, 150, 180, 210, 240], // végig világosodik: 11111111
+        [240, 210, 180, 150, 120, 90, 60, 30, 0], // végig sötétedik: 00000000
+        [0, 255, 0, 255, 0, 255, 0, 255, 0], // 10101010
+        [255, 0, 255, 0, 255, 0, 255, 0, 255], // 01010101
+        [0, 255, 255, 255, 255, 255, 255, 255, 255], // 10000000
+        [0, 0, 0, 0, 0, 0, 0, 0, 255], // 00000001
+        [128, 128, 128, 128, 128, 128, 128, 128, 128], // egyszínű: 00000000
+        [10, 20, 20, 20, 30, 30, 30, 30, 40], // 10010001
+      ]),
+    );
+
+    expect(dHashRowBytes(grid)).toEqual([0xff, 0x00, 0xaa, 0x55, 0x80, 0x01, 0x00, 0x91]);
+    expect(dHashFromGrid(grid)).toBe('ff00aa5580010091');
+  });
+
+  it('csak pontosan 72 fényességértéket fogad el', () => {
+    expect(() => dHashRowBytes(new Uint8Array(71))).toThrow(RangeError);
   });
 });
 

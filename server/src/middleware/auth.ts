@@ -27,6 +27,11 @@ export interface AuthMiddleware {
   optionalAuth: RequestHandler;
   loadSession: RequestHandler;
   requireRole: (...roles: Role[]) => RequestHandler;
+  /**
+   * A bejelentkezett, nem letiltott felhasználó, vagy null (ugyanaz, amit az optionalAuth a req.user-be
+   * tesz) – ott, ahol a munkamenet csak egyes kérésekhez kell (a /media őre a nem nyilvános képnél).
+   */
+  sessionViewer: (req: Request) => Promise<SessionUser | null>;
 }
 
 const unauthorized = (): AppError => new AppError(401, 'UNAUTHORIZED', 'Bejelentkezés szükséges');
@@ -68,9 +73,14 @@ export function createAuthMiddleware({
 
   // Az érvénytelen munkamenetű vagy letiltott felhasználó névtelen nézőként folytatja: a nyilvános
   // tartalmat így is látja, többet nem
-  const optionalAuth: RequestHandler = async (req, _res, next) => {
+  async function sessionViewer(req: Request): Promise<SessionUser | null> {
     const user = await findSessionUser(req);
-    if (user && !user.isBlocked) req.user = toSessionUser(user);
+    return user && !user.isBlocked ? toSessionUser(user) : null;
+  }
+
+  const optionalAuth: RequestHandler = async (req, _res, next) => {
+    const viewer = await sessionViewer(req);
+    if (viewer) req.user = viewer;
     next();
   };
 
@@ -97,5 +107,5 @@ export function createAuthMiddleware({
       next();
     };
 
-  return { requireAuth, optionalAuth, loadSession, requireRole };
+  return { requireAuth, optionalAuth, loadSession, requireRole, sessionViewer };
 }

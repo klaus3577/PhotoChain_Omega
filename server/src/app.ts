@@ -17,7 +17,8 @@ import {
 import { createAuthMiddleware } from './middleware/auth.js';
 import { createClientAppRouter } from './middleware/clientApp.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
-import { createMediaRouter } from './middleware/mediaProxy.js';
+import { createMediaAccess, mediaFileMissing } from './middleware/mediaAccess.js';
+import { createMediaRouter, MEDIA_CACHE_CONTROL } from './middleware/mediaProxy.js';
 import { createProxyChainProbe } from './middleware/proxyChain.js';
 import { createRateLimiter } from './middleware/rateLimit.js';
 import { rejectCrossSiteRequests } from './middleware/sameOrigin.js';
@@ -160,10 +161,8 @@ export function createApp({
   app.use(cookieParser());
 
   // A védett végpontok közös hitelesítő middleware-e; a későbbi modulok is ezt kapják meg
-  const { requireAuth, optionalAuth, loadSession, requireRole } = createAuthMiddleware({
-    prisma,
-    jwtSecret: env.JWT_SECRET,
-  });
+  const { requireAuth, optionalAuth, loadSession, requireRole, sessionViewer } =
+    createAuthMiddleware({ prisma, jwtSecret: env.JWT_SECRET });
   // A PhotoRegistry címe a beállított hálózaton – a képek tanúsítványában jelenik meg (L20)
   const contractAddress = resolveContractAddress(env.CHAIN_ID);
   // A képek közös katalógusa (galéria, adatlap, saját képek, elrejtés) – a képek, a saját profil és
@@ -237,27 +236,38 @@ export function createApp({
     }),
   );
 
-  // A nyilvános képek (vízjeles előnézet, bélyegkép) kiszolgálása. Az eredeti fájlok a mappán kívül
-  // vannak, így URL-en nem érhetők el; mappalista és rejtett fájl sincs.
-  // Forrás: Express 5 API – express.static, https://expressjs.com/en/5x/api.html#express.static
-  if (publicUploadsDirectory) {
-    app.use(
-      PUBLIC_URL_PREFIX,
-      express.static(publicUploadsDirectory, { index: false, dotfiles: 'deny', redirect: false }),
-    );
-  } else {
-    // Távoli tárhelynél (Supabase Storage, L32) a szerver a tárhelyről adja tovább ugyanezeket – IP-
-    // címenként korlátozva: minden kérés egy tárhely-letöltés (a kimenő forgalom kerete véges)
-    app.use(
-      PUBLIC_URL_PREFIX,
-      createRateLimiter({
-        windowMs: env.RATE_LIMIT_WINDOW_MS,
-        limit: env.MEDIA_RATE_LIMIT_MAX,
-        message: 'Túl sok képletöltés – próbáld újra később',
-      }),
-      createMediaRouter(storage),
-    );
-  }
+  // A nyilvános képek (vízjeles előnézet, bélyegkép) kiszolgálása. Előtte a kép láthatóságának
+  // ellenőrzése az adatbázisból (mediaAccess.ts): a nem nyilvános kép (regisztrációra váró, rejtett,
+  // vagy a fotósa letiltva) fájlját csak a kép kezelője (tulajdonos, admin) kapja meg, másnak 404.
+  // Minden kérés adatbázis-lekérdezés (távoli tárhelynél egy tárhely-letöltés is), ezért IP-címenként
+  // korlátozott – helyi tárhelynél is. A nyilvános képet a böngésző 5 percig újrakérés nélkül
+  // használhatja, köztes gyorsítótár nem tárolhatja (private); a nem nyilvános kép válaszát az őr
+  // no-store-ra állítja, azt a kiszolgálás nem írja felül. Az eredeti fájlok a nyilvános mappán
+  // kívül vannak, így URL-en nem érhetők el; mappalista és rejtett fájl sincs.
+  // Forrás: Express 5 API – express.static (setHeaders),
+  // https://expressjs.com/en/5x/api.html#express.static
+  app.use(
+    PUBLIC_URL_PREFIX,
+    createRateLimiter({
+      windowMs: env.RATE_LIMIT_WINDOW_MS,
+      limit: env.MEDIA_RATE_LIMIT_MAX,
+      message: 'Túl sok képletöltés – próbáld újra később',
+    }),
+    createMediaAccess({ prisma, sessionViewer }),
+    publicUploadsDirectory
+      ? express.static(publicUploadsDirectory, {
+          index: false,
+          dotfiles: 'deny',
+          redirect: false,
+          setHeaders: (res) => {
+            if (!res.get('Cache-Control')) res.set('Cache-Control', MEDIA_CACHE_CONTROL);
+          },
+        })
+      : // Távoli tárhelynél (Supabase Storage, L32) a szerver a tárhelyről adja tovább ugyanezeket
+        createMediaRouter(storage),
+    // A látható kép hiányzó fájlja is ugyanazt a 404-et kapja, mint a nem látható kép
+    mediaFileMissing,
+  );
   // A webes felület (L31): a konténerben ugyanaz a szerver szolgálja ki, mint az API-t
   if (env.CLIENT_DIST_DIR) {
     app.use(createClientAppRouter(env.CLIENT_DIST_DIR));

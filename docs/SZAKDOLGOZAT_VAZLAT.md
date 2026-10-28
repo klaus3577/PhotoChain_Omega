@@ -174,9 +174,9 @@ Jelölések: **Alapanyag** – a repó fájljai; **Ábra** – meglévő kép va
 
 - Tesztpiramis: unit, integrációs (Supertest, tesztadatbázis), komponenstesztek (React Testing
   Library, axe), okosszerződés-tesztek; CI minden pushra.
-- **Számok (a végleges állapot):** szerver 78 tesztfájl, 1304 teszt, utasítás-lefedettség 99,68 %;
+- **Számok (a végleges állapot):** szerver 79 tesztfájl, 1375 teszt, utasítás-lefedettség 99,47 %;
   kliens 61 fájl, 725 teszt, 98,69 %; okosszerződés 21 teszt; design-tesztek 22.
-- **Ábra:** `AUDIT_04_check.png`, `L27_30_szerver_lefedettseg_html.png`.
+- **Ábra:** `JAV_15_check.png`, `JAV_14_szerver_tesztek.png`, `L27_30_szerver_lefedettseg_html.png`.
 
 ### 5.2 Végponttól végpontig tartó tesztek (L28)
 

@@ -1,6 +1,7 @@
 // A rendelések kliensnek küldött alakja (DTO). A Prisma-lekérdezés explicit mezőlistával (select)
 // fut: a Stripe-munkamenet azonosítója, a vevő azonosítója és a kép eredetijének kulcsa le sem jön
-// az adatbázisból. Az elrejtett kép bélyegképe törlődött, ezért annak nincs URL-je. A vásárlásaim
+// az adatbázisból. A nem nyilvános kép bélyegképének nincs URL-je: az elrejtetté törlődött, a
+// letiltott fotósét a /media a vevőnek sem adja ki (a vevő az eredetit ettől még letöltheti). A vásárlásaim
 // listához (L22) a rendelés megmondja a fotós nevét, a vevő saját értékelését, és hogy az eredeti
 // letölthető-e (kifizetett rendelés, és a képet a moderátor nem vette le – ugyanaz a szabály, mint a
 // letöltésé, photos.download.ts), illetve írhat-e még értékelést (kifizetett rendelés, nyilvános
@@ -67,7 +68,10 @@ export interface OrderDto {
   photo: {
     id: string;
     title: string;
-    /** Az elrejtett kép bélyegképe törlődött: null */
+    /**
+     * A nem nyilvános kép (rejtett – a fájlja törlődött –, vagy a fotósa letiltva) bélyegképe: null;
+     * a /media a vevőnek sem adná ki (middleware/mediaAccess.ts)
+     */
     thumbnailUrl: string | null;
     ownerDisplayName: string;
   };
@@ -88,7 +92,9 @@ export function toOrderDto(order: OrderRow, storage: Pick<StorageService, 'publi
     photo: {
       id: order.photo.id,
       title: order.photo.title,
-      thumbnailUrl: publicUrlOf(order.photo.thumbnailKey, order.photo.status, storage),
+      thumbnailUrl: isPublic(order.photo)
+        ? publicUrlOf(order.photo.thumbnailKey, order.photo.status, storage)
+        : null,
       ownerDisplayName: order.photo.owner.displayName,
     },
   };

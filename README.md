@@ -71,7 +71,7 @@ nélkül: [docs/KIPROBALAS.md](docs/KIPROBALAS.md). Sepoliával, Stripe-pal és 
 | `npm run test:e2e` | böngészős tesztek a teljes folyamatra (Playwright, helyi lánccal)       |
 | `npm run build`    | a szerver és a kliens produkciós buildje                                |
 
-Tiszta példányon mérve: a szerveren 1304 teszt (99,68% utasítás-lefedettség), a kliensen 725 teszt
+A végleges kódon mérve: a szerveren 1375 teszt (99,47% utasítás-lefedettség), a kliensen 725 teszt
 (98,69%), 21 szerződés- és 22 design-teszt. A CI (GitHub Actions) minden push-ra lefuttatja az
 ellenőrzéseket, a buildet és a böngészős teszteket.
 

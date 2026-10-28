@@ -13,7 +13,11 @@ import {
   ownerRefOf,
 } from '../../services/blockchain.service.js';
 import { transactionProof, type TransactionProof } from '../../services/chainExplorer.js';
-import { findClosest, isNearDuplicate } from '../../services/hashing.service.js';
+import {
+  isNearDuplicate,
+  rankByDistance,
+  type RankedCandidate,
+} from '../../services/hashing.service.js';
 import { analyseImage, type ImageRules } from '../../services/imageAnalysis.js';
 import type { ImageWork } from '../../services/imageWork.js';
 import type { StorageService } from '../../services/storage/storage.types.js';
@@ -35,6 +39,15 @@ const CHAIN_PAUSE_MS = 60_000;
 const MS_PER_SECOND = 1_000;
 /** Ennyi, a láncon megtalált rekordot jegyez meg a szolgáltatás (rekordonként kb. 200 bájt) */
 const DEFAULT_REMEMBERED_RECORDS = 1_000;
+/**
+ * Egy ellenőrzés legfeljebb ennyi, a küszöbön belüli jelöltet erősít meg a láncon (a legközelebbitől
+ * sorban). A feltöltés a hasonló képeket elutasítja, így ennél több jelölt csak kivételesen lehet.
+ * Legrosszabb esetben egy kérés 1 + 5 láncolvasás (a vizsgált fájl hash-e és öt, a lánc által meg
+ * nem erősített jelölt) – az alapbeállításokkal egy IP-cím a 20 kérésével a közös 200-as keret 60 %-át
+ * foglalhatja le egy időablakban (korábban, egyetlen jelölttel, 20 %-át); a keret kimerülése 503-at
+ * ad, a kérés nem adhat hamis NOT_FOUND-ot.
+ */
+export const MAX_SIMILAR_CANDIDATES = 5;
 
 export type VerificationOutcome = 'VERIFIED' | 'SIMILAR' | 'NOT_FOUND';
 
@@ -291,25 +304,15 @@ export function createVerificationService({
   }
 
   /**
-   * A legközelebbi nyilvános kép, ha a küszöbön belül van, és a lánc is megerősíti (ugyanazzal a
-   * tulajdonossal) – a lánc itt is az igazságforrás; a regisztráció ideje a lánc rekordjából. A
-   * vizsgált fájllal azonos hash-ű sor nem számít: azt a lánc nem erősítette meg. Prototípus-méretben
-   * elég minden dHash-sel összevetni (mint a feltöltésnél); egyenlő távolságnál a korábban feltöltött
-   * kép számít eredetinek.
+   * A jelölt a regisztrációs idejével, ha még nyilvános, és a lánc ugyanazzal a tulajdonossal
+   * megerősíti; különben null. Ha közben elrejtették (vagy a fotósát letiltották), már nem nyilvános:
+   * nem adjuk ki. A lánc által meg nem erősített jelölt nyoma a naplóba kerül.
    */
-  async function findSimilar(sha256: string, dHash: string): Promise<SimilarPhoto | null> {
-    const candidates = await prisma.photo.findMany({
-      where: { ...PUBLIC_PHOTO_WHERE, sha256: { not: sha256 } },
-      select: { id: true, dHash: true },
-      orderBy: { createdAt: 'asc' },
-    });
-    const closest = findClosest(dHash, candidates);
-    if (!closest || !isNearDuplicate(closest.distance, dHashThreshold)) return null;
+  async function confirmSimilar({ id, distance }: RankedCandidate): Promise<SimilarPhoto | null> {
     const photo = await prisma.photo.findFirst({
-      where: { ...PUBLIC_PHOTO_WHERE, id: closest.id },
+      where: { ...PUBLIC_PHOTO_WHERE, id },
       select: PHOTO_PROOF_SELECT,
     });
-    // Ha közben elrejtették (vagy a fotóst letiltották), már nem nyilvános: nem adjuk ki
     if (!photo) return null;
     const record = await readChainRecord(photo.sha256);
     if (record?.ownerRef !== ownerRefOf(photo.ownerId)) {
@@ -320,7 +323,44 @@ export function createVerificationService({
       );
       return null;
     }
-    return { photo, registeredAt: record.registeredAt, distance: closest.distance };
+    return { photo, registeredAt: record.registeredAt, distance };
+  }
+
+  /**
+   * A legközelebbi olyan nyilvános kép, amely a küszöbön belül van, és a lánc is megerősíti
+   * (ugyanazzal a tulajdonossal) – a lánc itt is az igazságforrás; a regisztráció ideje a lánc
+   * rekordjából. A küszöbön belüli jelölteket távolság szerint sorban vizsgáljuk, és az első
+   * megerősítettet adjuk: ha a legközelebbit a lánc nem erősíti meg (vagy közben elrejtették), a
+   * következő jön – egyetlen jelölt kiesése nem jelenti, hogy nincs találat (témavezetői észrevétel,
+   * 2026-10-27). A vizsgált fájllal azonos hash-ű sor nem számít: azt a lánc nem erősítette meg.
+   * Prototípus-méretben elég minden dHash-sel összevetni (mint a feltöltésnél); egyenlő távolságnál a
+   * korábban feltöltött kép számít eredetinek.
+   */
+  async function findSimilar(sha256: string, dHash: string): Promise<SimilarPhoto | null> {
+    const candidates = await prisma.photo.findMany({
+      where: { ...PUBLIC_PHOTO_WHERE, sha256: { not: sha256 } },
+      select: { id: true, dHash: true },
+      // Azonos időpontnál az azonosító dönt, így az egyenlő távolságú jelöltek sorrendje is állandó
+      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+    });
+    const withinThreshold = rankByDistance(dHash, candidates).filter((candidate) =>
+      isNearDuplicate(candidate.distance, dHashThreshold),
+    );
+    const examined = withinThreshold.slice(0, MAX_SIMILAR_CANDIDATES);
+    for (const candidate of examined) {
+      const similar = await confirmSimilar(candidate);
+      if (similar) return similar;
+    }
+    // Csak ha a megvizsgáltak egyike sem igazolt, és maradt vizsgálatlan jelölt: a NOT_FOUND
+    // ilyenkor lehet a keret miatt téves – ennek nyoma a naplóban marad
+    if (withinThreshold.length > examined.length) {
+      logger.warn(
+        { candidates: withinThreshold.length, examined: examined.length },
+        'A küszöbön belüli hasonló képek közül csak a legközelebbieket vizsgáltuk, a lánc egyiket ' +
+          'sem erősítette meg (láncolvasási keret)',
+      );
+    }
+    return null;
   }
 
   async function verify(sha256: string, dHash: string | null): Promise<VerificationResult> {

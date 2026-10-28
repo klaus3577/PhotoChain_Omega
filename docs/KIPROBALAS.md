@@ -37,6 +37,13 @@ npm run install:all                    # a gyökér és a négy alprojekt függ�
 npm run install:browsers --prefix e2e  # a Chromium a böngészős (e2e) tesztekhez
 ```
 
+A telepítés végén az npm a `blockchain/` csomagnál 13 magas besorolású sebezhetőséget jelez. Mind
+ugyanaz az egy tanácsadás: a `zod` csomag 4.6.6 előtti verziói (GHSA-mrhx-c7xc-m3w5), amelyet a
+Hardhat 3 fejlesztői eszközlánca hoz magával, és amelyre a Hardhat jelenlegi kiadásaival nincs
+javítás. Ez csak a szerződés fordítását, tesztelését és telepítését végző fejlesztői eszközt
+érinti; a futó szerverbe és a webes felületbe nem kerül (azok saját `zod`-ja javított, 4.6.7); a
+többi négy csomagban 0 sebezhetőség. Részletek: `docs/biztonsag/owasp-ellenorzolista.md`, 3.1.
+
 ## 2. Beállítások (`.env`)
 
 A beállítások két `.env` fájlban vannak; ezek nem részei a projektnek, a sablonokból kell létrehozni
@@ -104,11 +111,11 @@ npm run build       # a szerver és a kliens produkciós buildje
 Az e2e-tesztek saját helyi láncot indítanak a 8545-ös porton, ezért előtte a 2. pontban indított
 `npm run node`-ot le kell állítani (Ctrl+C), utána újraindítható.
 
-A tiszta példányon mért eredmény:
+A mért eredmény (a tiszta példányon, majd a záró javítás után a végleges kódon újra):
 
 - `npm run check` (kb. 15 perc): a formázás, a lint és a típusellenőrzés hibátlan; 22
-  design-teszt, 21 szerződésteszt; a szerveren 78 tesztfájl, 1304 teszt (lefedettség: utasítás
-  99,68%, ág 98,59%), a kliensen 61 tesztfájl, 725 teszt (98,69%, 95,17%) – a küszöb 80%;
+  design-teszt, 21 szerződésteszt; a szerveren 79 tesztfájl, 1375 teszt (lefedettség: utasítás
+  99,47%, ág 98,18%), a kliensen 61 tesztfájl, 725 teszt (98,69%, 95,17%) – a küszöb 80%;
 - `npm run test:e2e` (kb. 6 perc): az előkészítés egységtesztjei (a tiszta példányon 5, az átnézés után
   kiegészítve 6), majd a Playwright-tesztek közül
   4 sikeres, 1 kihagyva – a vásárlás, mert a helyettesítő Stripe-kulcsot a Stripe nem fogadja el

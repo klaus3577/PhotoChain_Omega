@@ -120,15 +120,17 @@ export function createTestApp(
 }
 
 /**
- * Távoli tárhellyel (pl. Supabase Storage, L32) összeállított alkalmazás, adatbázis nélkül: ilyenkor
- * nincs helyi nyilvános mappa, a /media útvonalat a szerver a tárhelyről szolgálja ki.
+ * Távoli tárhellyel (pl. Supabase Storage, L32) összeállított alkalmazás: ilyenkor nincs helyi
+ * nyilvános mappa, a /media útvonalat a szerver a tárhelyről szolgálja ki. A kép láthatóságát a
+ * kiszolgálás előtt az adatbázisból ellenőrzi, ezért a tesztadatbázis kliensét kell átadni.
  */
 export function createTestAppWithStorage(
   storage: StorageService,
   overrides: Partial<Env> = {},
+  prisma?: PrismaClient,
 ): Express {
   const env = { ...TEST_ENV, ...overrides };
-  const prisma = createPrismaClient(env.DATABASE_URL);
+  prisma ??= createPrismaClient(env.DATABASE_URL);
   const { blockchain, photoRegistration } = createTestChain(prisma);
   return createApp({
     env,

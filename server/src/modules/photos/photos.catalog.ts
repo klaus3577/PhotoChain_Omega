@@ -5,8 +5,9 @@
 // bárki látja, a többit csak a tulajdonosa és az admin – mások számára nem létezik (404). Módosítani
 // csak a tulajdonos, elrejteni a tulajdonos és az admin tud; aki a képet látja, de nem jogosult,
 // 403-at kap. Az elrejtés a láncon semmit nem változtat (a rekord megmarad); a kép nyilvános fájljai
-// (előnézet, bélyegkép) viszont törlődnek, mert a statikus kiszolgálás – és az L32-es felhőtárhely –
-// az állapotot nem ellenőrzi. Az eredeti fájl megmarad. Az elrejtés azt is rögzíti, ki döntött róla
+// (előnézet, bélyegkép) viszont törlődnek: a /media kiszolgálás az állapotot is ellenőrzi
+// (middleware/mediaAccess.ts), de a levett kép fájlja a tárhelyen se maradjon meg. Az eredeti fájl
+// megmarad. Az elrejtés azt is rögzíti, ki döntött róla
 // (hiddenBy, L16 – photos.hiding.ts): a tulajdonos és az admin (moderátori levétel) döntése független,
 // egyik sem szünteti meg a másikét; a kép nyitott fizetései lezárulnak.
 // Forrás: Prisma ORM v7 – Filtering and sorting, Pagination (skip, take), Transactions,

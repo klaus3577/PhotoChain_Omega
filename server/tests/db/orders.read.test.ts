@@ -401,7 +401,8 @@ describe('GET /api/me/purchases', () => {
     const response = await purchases();
 
     expect(response.body.data.orders[0]).toMatchObject({
-      photo: { title: 'Tiltott fotós képe', ownerDisplayName: 'Tiltott Tamás' },
+      // A bélyegkép URL-je sem jár: a /media a letiltott fotós képét a vevőnek sem adná ki
+      photo: { title: 'Tiltott fotós képe', ownerDisplayName: 'Tiltott Tamás', thumbnailUrl: null },
       downloadable: true,
       reviewable: false,
     });
